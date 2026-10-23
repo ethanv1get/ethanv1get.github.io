@@ -1,17 +1,16 @@
-# Ethan 孙译的个人博客
+# ethan.
 
-保持好奇，实现想法。
+保持好奇，实现想法。一个关于思考、技术与生活的个人空间。
 
-纯静态 HTML/CSS，无需安装依赖或构建。
+网站：https://ethanv1.top/
 
-## 启用 GitHub Pages
+纯静态 HTML/CSS/JavaScript，无运行依赖。
 
-仓库 Settings → Pages → Build and deployment，Source 选择 Deploy from a branch，Branch 选择 main，Folder 选择 / (root)，保存。
+## 维护
 
-先在 GitHub Pages 提供的默认地址验证访问，再配置自定义域名 ethanv1.top。不要在默认地址验证完成前更换原 DNS。
+文章数据在 articles.json；共享页面模板在 scripts/build.py；样式在 style.css。
+修改后运行 python3 scripts/build.py，并运行 python3 scripts/check.py 验证。
+本地预览：node scripts/serve.mjs . --port 4400。
 
-## 修改
-
-index.html 首页；style.css 全站样式；about.html 关于；contact.html 联系；tech.html 和 life.html 分类；hello.html 开站草稿；assets/telegram.jpg 原始二维码。
-
-修改后提交到 main 会触发 Pages 更新。发布新文章时同时更新首页及相应分类页。
+文章、技术、生活、关于、联系和旧文章地址均保留。开站文仍保留待确认草稿标识。
+CNAME 和 .nojekyll 沿用现有配置。提交到 main 会触发 GitHub Pages 发布。

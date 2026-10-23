@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://ethanv1.top/sitemap.xml
