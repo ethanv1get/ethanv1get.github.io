@@ -12,5 +12,6 @@
 修改后运行 python3 scripts/build.py，并运行 python3 scripts/check.py 验证。
 本地预览：node scripts/serve.mjs . --port 4400。
 
-文章、技术、生活、关于、联系和旧文章地址均保留。开站文仍保留待确认草稿标识。
+文章、技术、生活、关于、联系和旧文章地址均保留。开站文《给想法一个开始的地方》已正式发布。
 CNAME 和 .nojekyll 沿用现有配置。提交到 main 会触发 GitHub Pages 发布。
+
