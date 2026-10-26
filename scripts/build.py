@@ -36,7 +36,7 @@ def structured_data(file, title, desc, canonical):
 
 
 def card(p,i,level=3):
-    return f'''<a class="post-card" href="{p['slug']}"><div class="post-cover" aria-hidden="true"><span class="cover-dot"></span></div><div class="post-info"><div class="meta"><span>{p['label']}</span><span class="reading-time">约 {reading_stats(p)[1]} 分钟</span>{'<span class="badge">待确认草稿</span>' if p['draft'] else ''}</div><h{level}>{escape(p['title'])}</h{level}><p>{escape(p['summary'])}</p><span class="read-link">阅读全文 {arrow()}</span></div></a>'''
+    return f'''<a class="post-card" href="{p['slug']}"><div class="post-cover" aria-hidden="true"><span class="cover-index">{i:02d} / ETHAN JOURNAL</span><span class="cover-dot"></span><span class="cover-type">思考<br><span>与记录。</span></span></div><div class="post-info"><div class="meta"><span>{p['label']}</span><span class="reading-time">约 {reading_stats(p)[1]} 分钟</span>{'<span class="badge">待确认草稿</span>' if p['draft'] else ''}</div><h{level}>{escape(p['title'])}</h{level}><p>{escape(p['summary'])}</p><span class="read-link">阅读全文 {arrow()}</span></div></a>'''
 def shell(file,title,desc,active,content):
     canonical=BASE+('' if file=='index.html' else file)
     nav=''.join(f'<a href="{url}" {CURRENT if key==active else ""}><span>{label}</span></a>' for key,url,label in [('home','index.html','首页'),('articles','articles.html','文章'),('about','about.html','关于'),('contact','contact.html','联系')])
@@ -53,8 +53,8 @@ def shell(file,title,desc,active,content):
 
 def write(file,title,desc,active,content): (ROOT/file).write_text(shell(file,title,desc,active,content))
 ring='''<div class="idea-mark" aria-hidden="true"><svg viewBox="0 0 420 420" fill="none"><circle cx="210" cy="210" r="180" fill="#e2ecf0"/><circle cx="210" cy="210" r="132" fill="#b8cbc6"/><circle cx="256" cy="236" r="68" fill="#315a79"/><circle cx="112" cy="112" r="28" fill="#dfb198"/></svg></div>'''
-home=f'''<section class="hero"><div class="hero-composition"><div class="hero-copy"><h1><span>记录此刻，</span><span>也探索未知。</span></h1><p>记录思考，探索技术，<br class="mobile-break">也收藏生活里值得记住的瞬间。</p><div class="actions">{link('articles.html','探索文章',True)}{link('about.html','关于我',direction='→')}</div></div>{ring}</div></section>
-<section class="selected section" id="selected"><div class="section-head"><div><h2>精选文章</h2></div><a class="text-link" href="articles.html">查看全部文章 {arrow('→')}</a></div>{''.join(card(p,i+1) for i,p in enumerate(POSTS[:3]))}</section>
+home=f'''<section class="hero"><div class="hero-composition"><div class="hero-copy"><span class="hero-eyebrow">ETHAN / 思考与生活的片段</span><h1><span>记录此刻，</span><span>也探索未知。</span></h1><p>记录思考，探索技术，<br class="mobile-break">也收藏生活里值得记住的瞬间。</p><div class="actions">{link('articles.html','探索文章',True)}{link('about.html','关于我',direction='→')}</div></div>{ring}</div><div class="hero-foot"><span>保持好奇，继续向前。</span><span>SCROLL TO EXPLORE ↓</span></div></section>
+<section class="selected section" id="selected"><div class="section-head"><div><span class="section-kicker">SELECTED WRITING / 01</span><h2>精选文章</h2></div><a class="text-link" href="articles.html">查看全部文章 {arrow('→')}</a></div>{''.join(card(p,i+1) for i,p in enumerate(POSTS[:3]))}</section>
 <section class="about-home section"><div><h2>关于我<span class="accent">。</span></h2></div><div class="about-copy"><p>我把思考写下来，也把好奇变成尝试。<br>技术、日常和偶然的灵感，都在这里慢慢留下痕迹。</p><a class="text-link" href="about.html">进一步了解 {arrow('→')}</a></div></section>'''
 write('index.html','记录此刻，也探索未知','ethan 的个人空间，记录思考、探索技术，也收藏生活里值得记住的瞬间。','home',home)
 
