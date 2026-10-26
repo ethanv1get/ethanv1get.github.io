@@ -19,6 +19,7 @@ class Page(HTMLParser):
 files=list(ROOT.glob('*.html'))
 for file in files:
     text=file.read_text();page=Page(text)
+    assert '↗' not in text and '↘' not in text,(file.name,'emoji-style diagonal arrow')
     assert page.h1==1,(file.name,'h1 count')
     assert '孙译' not in text,file.name
     assert '<meta name="description"' in text and '<link rel="canonical"' in text

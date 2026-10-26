@@ -9,8 +9,8 @@ ROOT=Path(__file__).resolve().parents[1]
 POSTS=json.loads((ROOT/'articles.json').read_text())
 CURRENT='aria-current="page"'
 BASE='https://ethanv1.top/'
-def arrow(direction='↗'): return f'<span class="arrow" aria-hidden="true">{direction}</span>'
-def link(href,text,primary=False,direction='↗'): return f'<a class="button {"primary" if primary else "secondary"}" href="{href}">{text}{"" if primary else " " + arrow(direction)}</a>'
+def arrow(direction='→'): return f'<span class="arrow" aria-hidden="true">{direction}</span>'
+def link(href,text,primary=False,direction='→'): return f'<a class="button {"primary" if primary else "secondary"}" href="{href}">{text}{"" if primary else " " + arrow(direction)}</a>'
 def reading_stats(post):
     text = unescape(re.sub(r'<[^>]+>', ' ', post['body']))
     units = len(re.findall(r'[\u3400-\u9fff]', text)) + len(re.findall(r'\b[A-Za-z0-9]+\b', text))
@@ -79,10 +79,10 @@ for p in POSTS:
             headings.append((anchor, unescape(re.sub(r'<[^>]+>', '', inner))))
             return f'<h2{attrs}>{inner}</h2>'
         body = re.sub(r'<h2([^>]*)>(.*?)</h2>', heading_anchor, body, flags=re.S)
-        toc_links = ''.join(f'<a href="#{escape(anchor)}">{escape(label)} {arrow("↘")}</a>' for anchor, label in headings)
+        toc_links = ''.join(f'<a href="#{escape(anchor)}">{escape(label)} {arrow("→")}</a>' for anchor, label in headings)
         if toc_links:
             toc = '<aside class="article-toc" aria-label="文章目录"><span>这篇文字里</span>' + toc_links + '</aside>'
-    content=f'''<article class="article-page"><a class="text-link back-link" href="articles.html">{arrow('←')} 返回文章列表</a><header class="article-heading"><div class="meta"><span>{p['label']}</span><span class="reading-time">约 {reading_stats(p)[1]} 分钟</span>{'<span class="badge">待确认草稿</span>' if p['draft'] else ''}</div><h1>{p['title']}</h1><p class="byline">文 / <span translate="no">ethan</span></p></header><div class="article-layout">{toc}<div class="prose">{'<p class="notice">这是一篇为展示博客阅读效果撰写的开站草稿，待 ethan 确认后再作为正式文章发布。</p>' if p['draft'] else ''}{body}<div class="article-end"><span class="end-dot" aria-hidden="true"></span><p>想法不必停在这里。</p><a class="text-link" href="contact.html">与 ethan 交流 {arrow('↗')}</a></div><div class="article-bottom">{link('articles.html','返回文章列表')}</div></div></div></article>'''
+    content=f'''<article class="article-page"><a class="text-link back-link" href="articles.html">{arrow('←')} 返回文章列表</a><header class="article-heading"><div class="meta"><span>{p['label']}</span><span class="reading-time">约 {reading_stats(p)[1]} 分钟</span>{'<span class="badge">待确认草稿</span>' if p['draft'] else ''}</div><h1>{p['title']}</h1><p class="byline">文 / <span translate="no">ethan</span></p></header><div class="article-layout">{toc}<div class="prose">{'<p class="notice">这是一篇为展示博客阅读效果撰写的开站草稿，待 ethan 确认后再作为正式文章发布。</p>' if p['draft'] else ''}{body}<div class="article-end"><span class="end-dot" aria-hidden="true"></span><p>想法不必停在这里。</p><a class="text-link" href="contact.html">与 ethan 交流 {arrow('→')}</a></div><div class="article-bottom">{link('articles.html','返回文章列表')}</div></div></div></article>'''
     write(p['slug'],p['title'],p['summary']+(' 本文为待确认开站草稿。' if p['draft'] else ''),'articles',content)
 
 write('about.html','关于','认识 ethan：用好奇心探索技术与生活，把思考、实践和日常灵感记录在自己的个人空间。','about',f'''<section class="page-heading about-heading"><span class="section-kicker">A little about me.</span><h1>让好奇心，<br>一直有回声。</h1><p>你好，我是 ethan。欢迎来到我的个人空间。</p></section><section class="about-detail section"><div class="about-label"><svg class="about-mark" viewBox="0 0 240 240" aria-hidden="true"><circle cx="120" cy="120" r="105" fill="none" stroke="currentColor"/><circle cx="120" cy="120" r="76" fill="none" stroke="currentColor"/><circle cx="146" cy="136" r="38" fill="currentColor"/></svg><p>思考。探索。记录。</p></div><div class="about-body"><p class="large-copy">这里既有认真思考的片段，<br>也有生活中值得留下的细节。</p><p>我对新技术保持好奇，也喜欢把想法写下来。在学习与探索中，记录问题、动手的过程，以及那些还没有答案的思考。</p><h2>这个博客</h2><p>技术与实践，记录从问题到解法的过程；生活与随笔，留住观察、感受和偶然的灵感。让专业与日常，在同一个地方自然相遇。</p><h2>从交流开始</h2><p>如果某篇文字让你产生共鸣，或你有想交流的想法，欢迎联系我。</p><div class="actions">{link('contact.html','查看联系方式',True)}{link('articles.html','读一些文字')}</div></div></section>''')
