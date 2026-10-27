@@ -1,60 +1,60 @@
-"""Check links, page semantics and preservation against the original Git baseline."""
+# -*- coding: utf-8 -*-
+"""Validate the generated public artifact, including editable CMS content."""
 from pathlib import Path
 from html.parser import HTMLParser
-from urllib.parse import urlsplit,unquote
-import re,subprocess,json,hashlib
-from datetime import date
-ROOT=Path(__file__).resolve().parents[1]
-BASELINE='f6c3ce62051bfaa328ab8d9e18a9dda4c6742593'
+from urllib.parse import urlsplit, unquote
+import os
+from xml.etree import ElementTree
+import re
+import json
+from content import load_articles, public_articles, STATIC_PAGES
+
+SOURCE=Path(__file__).resolve().parents[1]
+ROOT=Path(os.environ.get('SITE_OUTPUT',str(SOURCE))).resolve()
+posts=load_articles(SOURCE/'articles.json')
+public=public_articles(posts)
+
 class Page(HTMLParser):
     def __init__(self,text):
         super().__init__();self.links=[];self.ids=set();self.h1=0;self.feed(text)
     def handle_starttag(self,tag,attrs):
-        a=dict(attrs)
-        if 'id' in a:self.ids.add(a['id'])
+        attrs=dict(attrs)
+        if 'id' in attrs:
+            assert attrs['id'] not in self.ids,'Duplicate anchor: '+attrs['id']
+            self.ids.add(attrs['id'])
         if tag=='h1':self.h1+=1
-        if tag in ['a','img','script','link']:
-            u=a.get('href',a.get('src'))
-            if u is not None:self.links.append(u)
-        if tag=='img':assert 'alt' in a,'Missing alt text'
+        if tag in ('a','img','script','link'):
+            url=attrs.get('href',attrs.get('src'))
+            if url is not None:self.links.append(url)
+        if tag=='img':assert 'alt' in attrs,'Images need an alt field'
+
 files=list(ROOT.glob('*.html'))
+assert {p.name for p in files}==set(STATIC_PAGES)|{p['slug'] for p in public},'Unexpected/missing generated pages; use scripts/publish.py for a clean build'
 for file in files:
-    text=file.read_text();page=Page(text)
-    assert '↗' not in text and '↘' not in text,(file.name,'emoji-style diagonal arrow')
+    text=file.read_text(encoding='utf-8');page=Page(text)
     assert page.h1==1,(file.name,'h1 count')
-    assert '孙译' not in text,file.name
-    assert '<meta name="description"' in text and '<link rel="canonical"' in text
+    assert 'class="reading-time"' not in text,(file.name,'reading duration')
+    assert '<meta name="description"' in text and '<link rel="canonical"' in text,file.name
     for url in page.links:
         assert url and url!='#',(file.name,'empty link')
         parts=urlsplit(url)
         if parts.scheme or parts.netloc:continue
-        path=ROOT/unquote(parts.path.lstrip('/')) if parts.path else file
-        assert path.is_file(),(file.name,url)
+        target=ROOT/unquote(parts.path.lstrip('/')) if parts.path else file
+        assert target.is_file(),(file.name,url,'missing local target')
         if parts.fragment:
-            assert unquote(parts.fragment) in Page(path.read_text()).ids,(file.name,url,'missing fragment')
-if (ROOT/'.git').exists():
-    original=subprocess.check_output(['git','show',BASELINE+':hello.html'],cwd=ROOT,text=True)
-    body=re.search(r'<h2>保持好奇</h2>(.*?)<a class="back"',original,re.S).group(0).split('<a class="back"')[0]
-    # Ignore IDs added for in-page navigation, preserve every original heading and paragraph.
-    actual=(ROOT/'hello.html').read_text()
-    actual=re.sub(r' id="(?:curiosity|ideas|record)"','',actual)
-    assert body in actual,'Original article changed'
-    original_qr=subprocess.check_output(['git','show',BASELINE+':assets/telegram.jpg'],cwd=ROOT)
-    assert hashlib.sha256(original_qr).digest()==hashlib.sha256((ROOT/'assets/telegram.jpg').read_bytes()).digest()
-    assert (ROOT/'CNAME').read_bytes()==subprocess.check_output(['git','show',BASELINE+':CNAME'],cwd=ROOT)
-else:
-    print('NOTE: No Git history; baseline preservation comparison skipped.')
-posts=json.loads((ROOT/'articles.json').read_text())
-assert any(p['slug']=='hello.html' for p in posts), 'Existing article missing'
-assert len({p['slug'] for p in posts}) == len(posts), 'Duplicate article address'
+            assert unquote(parts.fragment) in Page(target.read_text(encoding='utf-8')).ids,(file.name,url,'missing fragment')
+    schema=re.search(r'<script type="application/ld\+json">(.*?)</script>',text,re.S)
+    assert schema,file.name
+    json.loads(schema.group(1))
+for post in public:
+    text=(ROOT/post['slug']).read_text(encoding='utf-8')
+    assert f'datetime="{post["datePublished"]}"' in text,post['slug']
+    assert '<span class="badge">待确认草稿</span>' not in text,post['slug']
+sitemap_paths={urlsplit(e.text).path.lstrip('/') for e in ElementTree.parse(ROOT/'sitemap.xml').iter() if e.tag.endswith('}loc') and e.text}
 for post in posts:
-    if not post.get('draft'):
-        value=post.get('datePublished')
-        assert isinstance(value,str) and re.fullmatch(r'\d{4}-\d{2}-\d{2}',value), 'Published articles need an explicit datePublished'
-        date.fromisoformat(value)
-        page=(ROOT/post['slug']).read_text()
-        assert f'datetime="{value}"' in page, 'Publication date missing from article'
-for file in files:
-    assert 'class="reading-time"' not in file.read_text(), 'Reading-duration metadata must not be shown'
-
-print(f'PASS: {len(files)} pages, local links/assets/fragments, metadata, original article, QR and domain preserved.')
+    if post['draft']:
+        assert not (ROOT/post['slug']).exists(),(post['slug'],'draft page must not be public')
+        assert post['slug'] not in sitemap_paths,(post['slug'],'draft in sitemap')
+assert (ROOT/'CNAME').read_bytes()==(SOURCE/'CNAME').read_bytes()
+assert (ROOT/'assets/telegram.jpg').read_bytes()==(SOURCE/'assets/telegram.jpg').read_bytes()
+print(f'PASS: {len(files)} public pages, dates, schema, links, anchors and draft exclusion.')

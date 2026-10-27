@@ -1,0 +1,79 @@
+# Pages CMS edits the existing data file; the site's design remains in the generator.
+media:
+  - name: article_images
+    label: 文章图片
+    input: assets/uploads
+    output: /assets/uploads
+    extensions: [png, jpg, jpeg, webp, gif, avif]
+    rename: safe
+
+content:
+  - name: articles
+    label: 文章管理
+    type: file
+    path: articles.json
+    format: json
+    list: true
+    fields:
+      - name: title
+        label: 文章标题
+        type: string
+        required: true
+      - name: slug
+        label: 文章网址
+        type: string
+        required: true
+        description: 填英文或数字短名，例如 first-note。发布后不要改名；已有 hello.html 保持原样。
+        pattern:
+          regex: '^[a-z0-9]+(-[a-z0-9]+)*(\.html)?$'
+          message: 请使用小写英文、数字和连字符，例如 first-note。
+      - name: datePublished
+        label: 首次发布日期
+        type: date
+        default: ""
+        description: 正式发布时必填；修改已发布文章时保留原日期。草稿可以留空。
+        options:
+          time: false
+          format: yyyy-MM-dd
+      - name: category
+        label: 分类
+        type: select
+        required: true
+        default: life
+        options:
+          values:
+            - name: life
+              label: 生活
+            - name: tech
+              label: 技术
+      - name: summary
+        label: 摘要（选填）
+        type: text
+        description: 留空时自动从正文提取，建议一两句话。
+      - name: body
+        label: 正文
+        type: rich-text
+        options:
+          format: html
+          switcher: false
+          media: article_images
+          path: assets/uploads
+      - name: draft
+        label: 草稿（开启时不发布到网站）
+        type: boolean
+        default: true
+      - name: label
+        label: 分类显示名称
+        type: string
+        hidden: true
+        default: ""
+
+settings:
+  hide: true
+  content:
+    merge: true
+  commit:
+    identity: app
+    templates:
+      update: "Update articles from Pages CMS"
+      create: "Create content from Pages CMS"

@@ -3,24 +3,38 @@
 记录此刻，也探索未知。一个关于思考、技术与生活的个人空间。
 
 网站：https://ethanv1.top/
+写作后台：https://app.pagescms.org/
 
-纯静态 HTML/CSS/JavaScript，无运行依赖。
+## 日常发布
+
+用 GitHub 登录 Pages CMS，选择本仓库的 `main` 分支，打开「文章管理」。填写标题、网址、分类、正文和首次发布日期，关闭草稿后保存，GitHub Actions 会自动生成并发布网站。
+
+完整步骤见 [发布文章指南](发布文章指南.md)。首次登录需要将 Pages CMS GitHub App 授权给这个网站仓库。
+
+## 草稿与日期
+
+草稿不生成网页，取消发布会从网站移除文章入口及详情。仓库是公开的，GitHub 中的草稿原文仍公开，请勿保存私密内容。
+
+正式文章必须填写 `datePublished`（`YYYY-MM-DD`）；修改正文或样式不会自动更改首次发布日期。现有开站文的正式发布日期是 2026-10-24。
+
+## 本地检查与预览
+
+```sh
+python3 scripts/test_cms_pipeline.py
+python3 scripts/publish.py
+node scripts/serve.mjs _site --port 4416
+```
+
+浏览器打开 http://127.0.0.1:4416/ 。构建只用 Python 标准库，不需要安装网站运行依赖。
 
 ## 维护
 
-文章数据在 articles.json；共享页面模板在 scripts/build.py；样式在 style.css。
-修改后运行 python3 scripts/build.py，并运行 python3 scripts/check.py 验证。
-本地预览：node scripts/serve.mjs . --port 4400。
+- `.pages.yml`：写作表单和上传图片配置。
+- `articles.json`：文章原始数据。
+- `scripts/content.py`：日期、网址、分类和发布状态校验。
+- `scripts/build.py`：页面模板；修改设计请改这里和 `style.css`。
+- `scripts/publish.py`：构建干净的 `_site` 公共发布包。
+- `.github/workflows/publish.yml`：保存内容后自动发布，GitHub Pages Source 为 GitHub Actions。
+- `CNAME` 和现有域名绑定保留，不需要修改 DNS。
 
-文章、技术、生活、关于、联系和旧文章地址均保留。开站文《给想法一个开始的地方》已正式发布。
-CNAME 和 .nojekyll 沿用现有配置。提交到 main 会触发 GitHub Pages 发布。
-
-
-
-## 文章发布日期规则
-
-每篇正式文章在 `articles.json` 中必须填写 `datePublished`，格式为 `YYYY-MM-DD`；首页、文章列表、分类和详情页统一显示“发布于 YYYY年M月D日”。日期也用于文章的结构化数据。
-
-此字段表示首次正式发布日期，后续改样式、修改正文或重新构建时不要改成当天。草稿可以暂不填写，正式发布前必须补齐；构建器会拒绝缺失或无效的日期，不会自动猜测。
-
-已有开站文正式发布于 2026-10-24，依据提交 `58486602b6344925670bdeaa96714503e794974f`（2026-10-24 13:13:17，Asia/Shanghai）。不再展示预计阅读时长。
+源码根目录的 HTML 为既有生成快照，自动发布以模板、文章数据和 `_site` 构建结果为准；不要把编辑生成文件当作文章发布流程。
