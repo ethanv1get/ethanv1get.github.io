@@ -147,3 +147,7 @@ nav[aria-label="主导航"] a:hover::after,nav[aria-label="主导航"] a[aria-cu
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}::view-transition-group(*),::view-transition-old(*),::view-transition-new(*){animation:none!important}.post-card:hover :is(h2,h3),.button:hover,.section-action:hover,.text-link:hover,.copy-button:hover,.contact-method:hover .contact-value{translate:none}}
 @media print{.site-header,.site-footer,.article-toc,.back-link,.article-bottom,.article-end .text-link,.copy-button,.copy-status{display:none}.site-shell{width:100%}.article-page{padding:0}.article-heading{text-align:left}body{background:#fff;color:#000;font-size:12pt}.prose{font-size:12pt}}
 .selected .post-card:last-child{border-bottom:0}
+
+.about-title-link{display:inline-flex;align-items:center;min-height:44px;color:var(--accent);text-decoration:underline;text-decoration-color:#91a7ab;text-decoration-thickness:1px;text-underline-offset:.22em;transition:color .2s var(--ease),text-decoration-color .2s var(--ease)}
+.about-title-link:hover{color:#173d4e;text-decoration-color:currentColor}
+.about-copy>p:last-child{margin-bottom:0}
