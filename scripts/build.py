@@ -72,7 +72,7 @@ def write(file,title,desc,active,content): (ROOT/file).write_text(shell(file,tit
 ring='''<div class="idea-mark" aria-hidden="true"><svg viewBox="0 0 420 420" fill="none"><circle cx="210" cy="210" r="180" fill="#e2ecf0"/><circle cx="210" cy="210" r="132" fill="#b8cbc6"/><circle cx="256" cy="236" r="68" fill="#315a79"/><circle cx="112" cy="112" r="28" fill="#dfb198"/></svg></div>'''
 home=f'''<section class="hero" aria-labelledby="home-title"><div class="hero-composition"><div class="hero-copy"><h1 id="home-title"><span>记录此刻，</span><span>也探索未知。</span></h1><p>记录思考，探索技术，<br class="mobile-break">也收藏生活里值得记住的瞬间。</p><div class="actions">{link('articles.html','浏览文章',True)}{link('about.html','认识我')}</div></div></div></section>
 <section class="selected section" id="selected" aria-labelledby="writing-title"><div class="section-head"><div><h2 id="writing-title">文章与记录</h2></div><a class="section-action" href="articles.html">全部文章</a></div>{''.join(card(p,i+1) for i,p in enumerate(POSTS[:3]))}</section>
-<section class="about-home section" aria-labelledby="about-title"><div><h2 id="about-title">关于 ethan</h2></div><div class="about-copy"><p>我把思考写下来，也把好奇变成尝试。<br>技术、日常和偶然的灵感，都在这里慢慢留下痕迹。</p><a class="section-action" href="about.html">查看关于页面</a></div></section>'''
+<section class="about-home section" aria-labelledby="about-title"><div><h2 id="about-title">关于 ethan</h2></div><div class="about-copy"><p>我把思考写下来，也把好奇变成尝试。<br>技术、日常和偶然的灵感，都在这里慢慢留下痕迹。</p><a class="section-action" href="about.html">进一步了解我</a></div></section>'''
 
 write('index.html','记录此刻，也探索未知','ethan 的个人空间，记录思考、探索技术，也收藏生活里值得记住的瞬间。','home',home)
 
