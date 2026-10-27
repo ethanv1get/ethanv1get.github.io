@@ -3,6 +3,7 @@ from pathlib import Path
 from html.parser import HTMLParser
 from urllib.parse import urlsplit,unquote
 import re,subprocess,json,hashlib
+from datetime import date
 ROOT=Path(__file__).resolve().parents[1]
 BASELINE='f6c3ce62051bfaa328ab8d9e18a9dda4c6742593'
 class Page(HTMLParser):
@@ -43,5 +44,17 @@ if (ROOT/'.git').exists():
     assert (ROOT/'CNAME').read_bytes()==subprocess.check_output(['git','show',BASELINE+':CNAME'],cwd=ROOT)
 else:
     print('NOTE: No Git history; baseline preservation comparison skipped.')
-assert len(json.loads((ROOT/'articles.json').read_text()))==1
+posts=json.loads((ROOT/'articles.json').read_text())
+assert any(p['slug']=='hello.html' for p in posts), 'Existing article missing'
+assert len({p['slug'] for p in posts}) == len(posts), 'Duplicate article address'
+for post in posts:
+    if not post.get('draft'):
+        value=post.get('datePublished')
+        assert isinstance(value,str) and re.fullmatch(r'\d{4}-\d{2}-\d{2}',value), 'Published articles need an explicit datePublished'
+        date.fromisoformat(value)
+        page=(ROOT/post['slug']).read_text()
+        assert f'datetime="{value}"' in page, 'Publication date missing from article'
+for file in files:
+    assert 'class="reading-time"' not in file.read_text(), 'Reading-duration metadata must not be shown'
+
 print(f'PASS: {len(files)} pages, local links/assets/fragments, metadata, original article, QR and domain preserved.')
