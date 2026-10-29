@@ -35,14 +35,9 @@ node scripts/serve.mjs _site --port 4416
 - `articles.json`：文章原始数据。
 - `scripts/content.py`：日期、网址、分类和发布状态校验。
 - `scripts/build.py`：页面模板；修改设计请改这里和 `style.css`。
+- `mainframe/`：首页视频互动、首屏和下方内容的源码。
 - `scripts/publish.py`：构建干净的 `_site` 公共发布包。
 - `.github/workflows/publish.yml`：保存内容后自动发布，GitHub Pages Source 为 GitHub Actions。
 - `CNAME` 和现有域名绑定保留，不需要修改 DNS。
 
-源码根目录的 HTML 为既有生成快照，自动发布以模板、文章数据和 `_site` 构建结果为准；不要把编辑生成文件当作文章发布流程。
-# 视频首页
-
-首页源码位于 `mainframe/`，采用 React、TypeScript、Vite 和 Tailwind CSS。先运行
-`npm ci --prefix mainframe` 和 `npm run build --prefix mainframe`，再运行
-`python3 scripts/publish.py`。发布脚本用构建后的首页和 `mainframe-assets/`
-覆盖原首页；文章、关于、联系等分页继续由 Python 模板生成。
+源码根目录的 HTML 为既有生成快照，自动发布以模板、文章数据和 `_site` 构建结果为准；不要把编辑生成文件当作文章发布流程。发布脚本会用 `mainframe/` 构建后的互动首页覆盖生成快照，文章、关于、联系等分页继续由 Python 模板生成。

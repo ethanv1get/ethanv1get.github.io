@@ -1,18 +1,15 @@
-import React, { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, type RefObject } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
 
 const VIDEO_URL = 'https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260826_041744_63efcd78-bf7d-4039-99e2-2461e8a61903.mp4'
-const TELEGRAM_HANDLE = '@ETHANV1'
 const MESSAGE = '记录思考，探索技术，也收藏生活里值得记住的瞬间。'
+const navigation = [['文章', '/articles.html'], ['关于', '/about.html'], ['联系', '/contact.html']] as const
 
-function useTypewriter(text: string, speed = 38, startDelay = 600) {
+function useTypewriter(text: string) {
   const [displayed, setDisplayed] = useState('')
   useEffect(() => {
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-      setDisplayed(text)
-      return
-    }
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) { setDisplayed(text); return }
     let interval: ReturnType<typeof setInterval> | undefined
     const delay = window.setTimeout(() => {
       let index = 0
@@ -20,18 +17,17 @@ function useTypewriter(text: string, speed = 38, startDelay = 600) {
         index += 1
         setDisplayed(text.slice(0, index))
         if (index >= text.length) window.clearInterval(interval)
-      }, speed)
-    }, startDelay)
+      }, 34)
+    }, 450)
     return () => { window.clearTimeout(delay); if (interval) window.clearInterval(interval) }
-  }, [text, speed, startDelay])
+  }, [text])
   return { displayed, done: displayed.length === text.length }
 }
 
-function useMouseScrub(videoRef: React.RefObject<HTMLVideoElement | null>) {
+function useMouseScrub(videoRef: RefObject<HTMLVideoElement | null>) {
   const prevX = useRef<number | null>(null)
   const targetTime = useRef(0)
   const seeking = useRef(false)
-
   const seekToTarget = () => {
     const video = videoRef.current
     if (!video || seeking.current || !Number.isFinite(video.duration) || video.duration <= 0) return
@@ -39,7 +35,6 @@ function useMouseScrub(videoRef: React.RefObject<HTMLVideoElement | null>) {
     seeking.current = true
     try { video.currentTime = targetTime.current } catch { seeking.current = false }
   }
-
   useEffect(() => {
     const onMove = (event: MouseEvent) => {
       const video = videoRef.current
@@ -54,29 +49,17 @@ function useMouseScrub(videoRef: React.RefObject<HTMLVideoElement | null>) {
     window.addEventListener('mousemove', onMove)
     return () => window.removeEventListener('mousemove', onMove)
   }, [videoRef])
-
   return {
     onSeeked: () => { seeking.current = false; seekToTarget() },
     onLoadedMetadata: () => { targetTime.current = videoRef.current?.currentTime ?? 0; seekToTarget() },
   }
 }
 
-const links = [
-  ['文章', '/articles.html'], ['技术', '/tech.html'], ['生活', '/life.html'], ['关于', '/about.html'],
-] as const
-
 function App() {
   const videoRef = useRef<HTMLVideoElement>(null)
   const videoHandlers = useMouseScrub(videoRef)
   const { displayed, done } = useTypewriter(MESSAGE)
   const [menuOpen, setMenuOpen] = useState(false)
-  const [pillsVisible, setPillsVisible] = useState(false)
-  const [copied, setCopied] = useState(false)
-
-  useEffect(() => {
-    const timer = window.setTimeout(() => setPillsVisible(true), 400)
-    return () => window.clearTimeout(timer)
-  }, [])
   useEffect(() => {
     if (!menuOpen) return
     const onKeyDown = (event: KeyboardEvent) => { if (event.key === 'Escape') setMenuOpen(false) }
@@ -84,51 +67,36 @@ function App() {
     return () => window.removeEventListener('keydown', onKeyDown)
   }, [menuOpen])
 
-  const pillClass = 'inline-flex items-center justify-center rounded-full border border-black/10 bg-white px-4 sm:px-5 py-[0.3em] mx-[0.2em] mb-[0.4em] whitespace-nowrap text-[13px] sm:text-[15px] text-black hover:bg-black hover:text-white transition-colors duration-200'
-  const copyTelegram = async () => {
-    try {
-      await navigator.clipboard.writeText(TELEGRAM_HANDLE)
-      setCopied(true)
-      window.setTimeout(() => setCopied(false), 2000)
-    } catch { setCopied(false) }
-  }
-
   return <>
-    <video ref={videoRef} src={VIDEO_URL} muted playsInline preload="auto" aria-hidden="true" className="fixed inset-0 z-0 h-full w-full object-cover object-[70%_center]" {...videoHandlers} />
-    <nav aria-label="主导航" className="fixed top-0 z-10 flex w-full items-center justify-between px-5 py-4 sm:px-8 sm:py-5">
-      <a href="/" className="flex items-center gap-3 text-white" aria-label="ethan. 首页">
-        <span className="text-[21px] sm:text-[26px] tracking-tight" style={{ fontFamily: 'var(--font-heading)' }}>ethan.</span>
-        <span aria-hidden="true" className="select-none text-[25px] sm:text-[30px] tracking-[-0.02em]">✳︎</span>
-      </a>
-      <div className="hidden md:flex text-[23px] text-white" aria-label="网站栏目">
-        {links.map(([label, href], index) => <React.Fragment key={label}><a href={href} className="transition-opacity hover:opacity-60">{label}</a>{index < links.length - 1 && <span>,&nbsp;</span>}</React.Fragment>)}
-      </div>
-      <a href="/contact.html" className="hidden md:inline text-[23px] text-white underline underline-offset-2 transition-opacity hover:opacity-60">联系我</a>
-      <button type="button" aria-label={menuOpen ? '关闭菜单' : '打开菜单'} aria-expanded={menuOpen} aria-controls="mobile-menu" onClick={() => setMenuOpen(value => !value)} className="relative z-10 flex flex-col gap-[5px] md:hidden">
-        <span className={`h-[2px] w-6 bg-white transition-transform duration-300 ${menuOpen ? 'translate-y-[7px] rotate-45' : ''}`} />
-        <span className={`h-[2px] w-6 bg-white transition-opacity duration-300 ${menuOpen ? 'opacity-0' : ''}`} />
-        <span className={`h-[2px] w-6 bg-white transition-transform duration-300 ${menuOpen ? '-translate-y-[7px] -rotate-45' : ''}`} />
-      </button>
-    </nav>
-    <div id="mobile-menu" aria-hidden={!menuOpen} className={`fixed inset-0 z-[9] flex flex-col items-start justify-center gap-8 bg-black/90 px-8 backdrop-blur-md transition-opacity duration-300 md:hidden ${menuOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}>
-      {links.map(([label, href]) => <a key={label} href={href} tabIndex={menuOpen ? 0 : -1} onClick={() => setMenuOpen(false)} className="text-[32px] font-medium text-white">{label}</a>)}
-      <a href="/contact.html" tabIndex={menuOpen ? 0 : -1} className="text-[32px] font-medium text-white underline underline-offset-2">联系我</a>
-    </div>
-    <main className="relative z-[1] flex h-screen flex-col justify-end overflow-hidden px-5 pb-12 sm:px-8 md:justify-center md:px-10 md:pb-0">
-      <div className="relative z-10 max-w-xl">
-        <h1 className="pointer-events-none mb-5 select-none text-white sm:mb-6" style={{ fontSize: 'clamp(18px, 4vw, 26px)', lineHeight: 1.3, fontWeight: 400, filter: 'blur(4px)' }}>你好，我是 ethan。<br />记录此刻，也探索未知。</h1>
-        <p className="mb-5 min-h-[54px] text-white sm:mb-6" style={{ fontSize: 'clamp(18px, 4vw, 26px)', lineHeight: 1.35, fontWeight: 400 }}>{displayed}{!done && <span aria-hidden="true" className="typing-cursor ml-[2px] inline-block h-[1.1em] w-[2px] align-middle bg-white" />}</p>
-        <div className={`pills-enter flex flex-wrap gap-y-1 ${pillsVisible ? 'is-visible' : ''}`}>
-          <a className={pillClass} href="/articles.html">浏览文章</a>
-          <a className={pillClass} href="/tech.html">技术文章</a>
-          <a className={pillClass} href="/life.html">生活记录</a>
-          <a className={pillClass} href="/about.html">关于 ethan</a>
-          <button type="button" onClick={copyTelegram} aria-label={copied ? '已复制 Telegram 用户名' : `复制 Telegram 用户名 ${TELEGRAM_HANDLE}`} className="mx-[0.2em] mb-[0.4em] inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-full border border-white bg-transparent px-4 py-[0.3em] text-[13px] text-white transition-colors duration-200 hover:bg-white hover:text-black sm:gap-3 sm:px-5 sm:text-[15px]">
-            <span>Telegram: <u className="underline-offset-1">{TELEGRAM_HANDLE}</u></span>
-            <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.2" aria-hidden="true"><rect x="3.5" y="3.5" width="7" height="7" rx=".5" /><path d="M8.5 3.5V2a.5.5 0 0 0-.5-.5H2a.5.5 0 0 0-.5.5v6a.5.5 0 0 0 .5.5h1.5" /></svg>
-          </button>
-          <span role="status" aria-live="polite" className="sr-only">{copied ? 'Telegram 用户名已复制' : ''}</span>
-        </div>
+    <header className="hero-header">
+      <a href="/" className="hero-brand" aria-label="ethan. 首页">ethan.</a>
+      <nav aria-label="主导航" className="hero-nav">{navigation.map(([label, href]) => <a href={href} key={label}>{label}</a>)}</nav>
+      <button className="menu-toggle" type="button" aria-label={menuOpen ? '关闭菜单' : '打开菜单'} aria-expanded={menuOpen} aria-controls="mobile-menu" onClick={() => setMenuOpen(value => !value)}><span className={menuOpen ? 'open' : ''} /><span className={menuOpen ? 'open' : ''} /><span className={menuOpen ? 'open' : ''} /></button>
+    </header>
+    <nav id="mobile-menu" aria-label="手机导航" aria-hidden={!menuOpen} className={`mobile-menu ${menuOpen ? 'is-open' : ''}`}>{navigation.map(([label, href]) => <a href={href} key={label} tabIndex={menuOpen ? 0 : -1} onClick={() => setMenuOpen(false)}>{label}</a>)}</nav>
+    <main>
+      <section className="video-hero" aria-labelledby="hero-title">
+        <video ref={videoRef} src={VIDEO_URL} muted playsInline preload="auto" aria-hidden="true" className="hero-video" {...videoHandlers} />
+        <div className="video-shade" aria-hidden="true" />
+        <div className="hero-inner"><div className="hero-copy">
+          <p className="hero-intro">一个关于思考、技术与生活的个人空间。</p>
+          <h1 id="hero-title">记录此刻，<br />也探索未知。</h1>
+          <p className="hero-typewriter">{displayed}{!done && <span className="typing-cursor" aria-hidden="true" />}</p>
+          <div className="hero-actions"><a className="hero-primary" href="/articles.html">浏览文章</a><a className="hero-secondary" href="/about.html">关于 ethan</a></div>
+        </div></div>
+        <div className="hero-bottom"><span className="mouse-hint">移动鼠标，画面会跟随你。</span><a href="#writing">继续阅读</a></div>
+      </section>
+      <div className="editorial-page">
+        <section className="editorial-section writing-section" id="writing" aria-labelledby="writing-title">
+          <div className="section-label">文章与记录</div>
+          <div className="writing-grid"><h2 id="writing-title">从一个小小的疑问开始。</h2><div className="writing-copy"><p>可以认真讨论技术，也可以聊聊生活。不必每一次都有完整的答案，先把值得思考的事情写下来。</p><a href="/articles.html">浏览全部文章</a></div></div>
+          <div className="category-links"><a href="/tech.html"><span>技术与实践</span><small>工具、尝试和解决问题的过程</small></a><a href="/life.html"><span>生活与随笔</span><small>日常里的观察与发现</small></a></div>
+        </section>
+        <section className="editorial-section about-section" aria-labelledby="about-title">
+          <div className="section-label">关于</div>
+          <div className="about-grid"><h2 id="about-title"><a href="/about.html">关于 ethan</a></h2><div><p>最近在折腾 AI 工具，也在慢慢整理这个网站。这里会放一些技术上的尝试、生活里的观察，还有暂时没想明白的问题。</p><p>我想把过程也记下来：为什么开始，试过什么，哪里卡住，最后有什么发现。</p></div></div>
+        </section>
+        <footer className="home-footer"><div><span className="footer-brand">ethan.</span><p>给好奇心留一点空间。</p></div><div className="footer-links"><a href="https://t.me/ETHANV1">Telegram</a><a href="/contact.html">联系我</a></div><small>© 2026 ethan</small></footer>
       </div>
     </main>
   </>
