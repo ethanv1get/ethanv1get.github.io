@@ -60,7 +60,7 @@ def card(p,i,level=3):
 
 def shell(file,title,desc,active,content):
     canonical=BASE+('' if file=='index.html' else file)
-    nav=''.join(f'<a href="{url}" {CURRENT if key==active else ""}><span>{label}</span></a>' for key,url,label in [('home','index.html','首页'),('articles','articles.html','文章'),('about','about.html','关于'),('contact','contact.html','联系')])
+    nav=''.join(f'<a href="{url}" {CURRENT if key==active else ""}><span>{label}</span></a>' for key,url,label in [('articles','articles.html','文章'),('tech','tech.html','技术'),('life','life.html','生活'),('about','about.html','关于'),('contact','contact.html','联系')])
     schema=structured_data(file, title, desc, canonical)
     return f'''<!doctype html>
 <html lang="zh-CN"><head>
@@ -68,7 +68,7 @@ def shell(file,title,desc,active,content):
 <meta name="theme-color" content="#f7f8f5"><title>{escape(title)} · ethan.</title><meta name="description" content="{escape(desc)}">
 {'<meta name="robots" content="noindex">' if file=='404.html' else ''}
 <link rel="canonical" href="{canonical}"><meta property="og:type" content="{'article' if any(post['slug']==file for post in POSTS) else 'website'}"><meta property="og:locale" content="zh_CN"><meta property="og:site_name" content="ethan."><meta property="og:title" content="{escape(title)} · ethan."><meta property="og:description" content="{escape(desc)}"><meta property="og:url" content="{canonical}"><meta property="og:image" content="{BASE}assets/og.png"><meta property="og:image:alt" content="ethan. 记录此刻，也探索未知。"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="{escape(title)} · ethan."><meta name="twitter:description" content="{escape(desc)}"><meta name="twitter:image" content="{BASE}assets/og.png">
-<link rel="icon" href="assets/favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="style.css?v=20261028-about-copy"><script src="site.js" defer></script><script type="application/ld+json">{json.dumps(schema,ensure_ascii=False).replace('<', chr(92) + 'u003c')}</script></head>
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="style.css?v=20261029-ethan-nav"><script src="site.js" defer></script><script type="application/ld+json">{json.dumps(schema,ensure_ascii=False).replace('<', chr(92) + 'u003c')}</script></head>
 <body id="top"><a class="skip" href="#main">跳到正文</a><div class="site-shell"><header class="site-header"><a class="brand" href="index.html" translate="no" aria-label="ethan. 首页">ethan<span>.</span></a><nav aria-label="主导航">{nav}</nav></header><main id="main" tabindex="-1">{content}</main>
 <footer class="site-footer"><div class="footer-top"><div><a class="footer-brand" href="index.html" translate="no">ethan.</a><p>给好奇心留一点空间。</p></div><div class="footer-contact"><p class="footer-label">保持联系</p><div class="footer-links"><a href="https://t.me/ETHANV1">Telegram</a><a href="mailto:ethansunv1@gmail.com">写封邮件</a></div></div></div><div class="footer-bottom"><span>© <span data-year>2026</span> ethan</span><a class="to-top" href="#top">回到顶部 {arrow('↑')}</a></div></footer></div></body></html>'''
 
@@ -98,7 +98,7 @@ for filename,category,label in [('articles.html','all','全部'),('tech.html','t
     visible=[p for p in POSTS if category=='all' or p['category']==category]
     filters=''.join(f'<a class="filter" href="{f}" {CURRENT if c==category else ""}>{n}<span>{len([p for p in POSTS if c=="all" or p["category"]==c])}</span></a>' for f,c,n in [('articles.html','all','全部'),('tech.html','tech','技术'),('life.html','life','生活')])
     content=f'''<section class="page-heading"><h1>文章与记录</h1><p>技术与实践，生活与随笔。<br>不急着给出答案，先把值得思考的事情写下来。</p></section><section class="archive section" aria-label="{label}文章"><nav class="filters" aria-label="文章分类">{filters}</nav><div class="archive-results">{''.join(card(p,POSTS.index(p)+1,2) for p in visible) if visible else empty_state(category)}</div><p class="archive-note">{f'共 {len(visible)} 篇记录' if visible else '当前分类 0 篇记录'}{'，其中 1 篇为待确认草稿。' if any(p['draft'] for p in visible) else '。'}</p></section>'''
-    write(filename,('文章' if category=='all' else label+'文章'),'ethan 的'+label+'文章与记录。'+('技术文章尚未发布，欢迎浏览其他文字。' if not visible else '关于思考、实践与生活的文字。'),'articles',content)
+    write(filename,('文章' if category=='all' else label+'文章'),'ethan 的'+label+'文章与记录。'+('技术文章尚未发布，欢迎浏览其他文字。' if not visible else '关于思考、实践与生活的文字。'),'articles' if category=='all' else category,content)
 
 for p in POSTS:
     units = article_length(p)

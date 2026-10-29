@@ -20,12 +20,14 @@
 ## 本地检查与预览
 
 ```sh
+npm ci --prefix mainframe
+npm run build --prefix mainframe
 python3 scripts/test_cms_pipeline.py
 python3 scripts/publish.py
 node scripts/serve.mjs _site --port 4416
 ```
 
-浏览器打开 http://127.0.0.1:4416/ 。构建只用 Python 标准库，不需要安装网站运行依赖。
+浏览器打开 http://127.0.0.1:4416/ 。首页需要 Node.js 构建，分页构建仍只用 Python 标准库。
 
 ## 维护
 
@@ -38,10 +40,9 @@ node scripts/serve.mjs _site --port 4416
 - `CNAME` 和现有域名绑定保留，不需要修改 DNS。
 
 源码根目录的 HTML 为既有生成快照，自动发布以模板、文章数据和 `_site` 构建结果为准；不要把编辑生成文件当作文章发布流程。
-# Mainframe homepage
+# 视频首页
 
-The homepage is the React, TypeScript, Vite, and Tailwind project in `mainframe/`.
-Run `npm ci --prefix mainframe` and `npm run build --prefix mainframe` before
-`python3 scripts/publish.py`. The publisher overlays the built homepage and
-its `mainframe-assets/` files onto the existing static Pages artifact. The
-article, about, and contact pages continue to use the Python generator.
+首页源码位于 `mainframe/`，采用 React、TypeScript、Vite 和 Tailwind CSS。先运行
+`npm ci --prefix mainframe` 和 `npm run build --prefix mainframe`，再运行
+`python3 scripts/publish.py`。发布脚本用构建后的首页和 `mainframe-assets/`
+覆盖原首页；文章、关于、联系等分页继续由 Python 模板生成。
