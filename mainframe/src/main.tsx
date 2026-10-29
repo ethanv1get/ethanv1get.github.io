@@ -115,7 +115,7 @@ function App() {
       {links.map(([label, href]) => <a key={label} href={href} tabIndex={menuOpen ? 0 : -1} onClick={() => setMenuOpen(false)} className="text-[32px] font-medium text-white">{label}</a>)}
       <a href={mailLink('Hello Mainframe')} tabIndex={menuOpen ? 0 : -1} className="text-[32px] font-medium text-white underline underline-offset-2">Get in touch</a>
     </div>
-    <main className="relative z-[1] flex h-screen min-h-[550px] flex-col justify-end overflow-hidden px-5 pb-12 sm:px-8 md:justify-center md:px-10 md:pb-0">
+    <main className="relative z-[1] flex h-screen flex-col justify-end overflow-hidden px-5 pb-12 sm:px-8 md:justify-center md:px-10 md:pb-0">
       <div className="relative z-10 max-w-xl">
         <h1 className="pointer-events-none mb-5 select-none text-white sm:mb-6" style={{ fontSize: 'clamp(18px, 4vw, 26px)', lineHeight: 1.3, fontWeight: 400, filter: 'blur(4px)' }}>Hey there, meet A.R.I.A,<br />Mainframe&apos;s Adaptive Response Interface Agent</h1>
         <p className="mb-5 min-h-[54px] text-white sm:mb-6" style={{ fontSize: 'clamp(18px, 4vw, 26px)', lineHeight: 1.35, fontWeight: 400 }}>{displayed}{!done && <span aria-hidden="true" className="typing-cursor ml-[2px] inline-block h-[1.1em] w-[2px] align-middle bg-white" />}</p>
