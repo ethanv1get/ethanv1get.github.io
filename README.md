@@ -38,3 +38,10 @@ node scripts/serve.mjs _site --port 4416
 - `CNAME` 和现有域名绑定保留，不需要修改 DNS。
 
 源码根目录的 HTML 为既有生成快照，自动发布以模板、文章数据和 `_site` 构建结果为准；不要把编辑生成文件当作文章发布流程。
+# Mainframe homepage
+
+The homepage is the React, TypeScript, Vite, and Tailwind project in `mainframe/`.
+Run `npm ci --prefix mainframe` and `npm run build --prefix mainframe` before
+`python3 scripts/publish.py`. The publisher overlays the built homepage and
+its `mainframe-assets/` files onto the existing static Pages artifact. The
+article, about, and contact pages continue to use the Python generator.

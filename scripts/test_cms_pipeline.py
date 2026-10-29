@@ -15,7 +15,7 @@ class CmsPublishingTests(unittest.TestCase):
     def setUp(self):
         self.tmp=TemporaryDirectory(prefix='cms-publish-test-',dir=ROOT.parent)
         self.root=Path(self.tmp.name)/'site'
-        shutil.copytree(ROOT,self.root,ignore=shutil.ignore_patterns('.git','_site','__pycache__'))
+        shutil.copytree(ROOT,self.root,ignore=shutil.ignore_patterns('.git','_site','__pycache__','node_modules'))
         self.original=(self.root/'articles.json').read_bytes()
         self.posts=json.loads(self.original)
     def tearDown(self):self.tmp.cleanup()
@@ -45,7 +45,7 @@ class CmsPublishingTests(unittest.TestCase):
         self.assertIn('<span>技术</span>',html)
         self.assertIn('"datePublished": "2026-10-27"',html)
         self.assertIn('content="article"',html)
-        for name in ['index.html','articles.html','tech.html','sitemap.xml']:
+        for name in ['articles.html','tech.html','sitemap.xml']:
             self.assertIn('new-note.html',(output/name).read_text())
         self.assertTrue((output/'assets/uploads/check.png').exists())
     def test_drafts_are_not_public_or_packaged(self):

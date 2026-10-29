@@ -1,0 +1,21 @@
+@import "tailwindcss";
+
+:root {
+  --font-heading: 'HelveticaNowDisplay-Medium', 'Helvetica Neue', Arial, sans-serif;
+  --font-body: 'HelveticaNowDisplayW01-Rg', 'Helvetica Neue', Arial, sans-serif;
+  color-scheme: dark;
+}
+
+html, body, #root { min-height: 100%; }
+body { margin: 0; background: #000; color: #fff; font-family: var(--font-body); }
+button, a { -webkit-tap-highlight-color: transparent; }
+a:focus-visible, button:focus-visible { outline: 2px solid white; outline-offset: 4px; }
+@keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+.typing-cursor { animation: blink 1s step-end infinite; }
+.pills-enter { opacity: 0; transform: translateY(8px); transition: opacity .4s ease, transform .4s ease; }
+.pills-enter.is-visible { opacity: 1; transform: translateY(0); }
+@media (prefers-reduced-motion: reduce) {
+  .typing-cursor { animation: none; }
+  .pills-enter { transition: none; transform: none; }
+  *, *::before, *::after { scroll-behavior: auto !important; }
+}
