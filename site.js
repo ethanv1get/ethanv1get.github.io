@@ -33,3 +33,55 @@
     });
   });
 })();
+
+/* The same video behavior as the homepage: mouse scrub on desktop, motion on phones. */
+(() => {
+  const video = document.querySelector('[data-subpage-video]');
+  if (!video) return;
+  const playButton = document.querySelector('.subpage-play');
+  const media = window.matchMedia('(max-width: 800px), (pointer: coarse)');
+  let previousX = null;
+  let targetTime = 0;
+  let seeking = false;
+
+  const seekToTarget = () => {
+    if (media.matches || seeking || !Number.isFinite(video.duration) || video.duration <= 0) return;
+    if (Math.abs(video.currentTime - targetTime) < .025) return;
+    seeking = true;
+    try { video.currentTime = targetTime; } catch { seeking = false; }
+  };
+  const playMobile = () => {
+    if (!media.matches) return;
+    video.play().then(() => { if (playButton) playButton.hidden = true; })
+      .catch(() => { if (playButton) playButton.hidden = false; });
+  };
+  const updateMode = () => {
+    previousX = null;
+    targetTime = video.currentTime || 0;
+    video.loop = media.matches;
+    video.autoplay = media.matches;
+    if (media.matches) playMobile();
+    else {
+      video.pause();
+      if (playButton) playButton.hidden = true;
+    }
+  };
+
+  window.addEventListener('mousemove', event => {
+    if (media.matches) return;
+    const currentX = event.clientX;
+    if (previousX === null) { previousX = currentX; return; }
+    const delta = currentX - previousX;
+    previousX = currentX;
+    if (!Number.isFinite(video.duration) || video.duration <= 0) return;
+    targetTime = Math.max(0, Math.min(video.duration, targetTime + delta / window.innerWidth * .8 * video.duration));
+    seekToTarget();
+  });
+  video.addEventListener('loadedmetadata', () => { targetTime = video.currentTime; seekToTarget(); });
+  video.addEventListener('seeked', () => { seeking = false; seekToTarget(); });
+  video.addEventListener('canplay', () => { if (media.matches && video.paused) playMobile(); });
+  playButton?.addEventListener('click', playMobile);
+  document.querySelector('.page-heading, .article-masthead')?.addEventListener('touchstart', playMobile, { passive: true });
+  media.addEventListener('change', updateMode);
+  updateMode();
+})();
