@@ -77,7 +77,7 @@ for post in ALL_POSTS:
     if post['draft'] and (OUTPUT/post['slug']).exists():
         (OUTPUT/post['slug']).unlink()
 def write(file,title,desc,active,content): (OUTPUT/file).write_text(shell(file,title,desc,active,content),encoding='utf-8')
-page_video='''<div class="subpage-media" aria-hidden="true"><video data-subpage-video muted playsinline preload="auto" src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260826_041744_63efcd78-bf7d-4039-99e2-2461e8a61903.mp4"></video><div class="subpage-shade"></div></div><button class="subpage-play" type="button" aria-label="播放背景动画" hidden>▶</button>'''
+page_video='''<div class="subpage-media" aria-hidden="true"><video data-subpage-video muted playsinline preload="auto" poster="/assets/hero-poster.jpg" src="/assets/hero-video.mp4"></video><div class="subpage-shade"></div></div><button class="subpage-play" type="button" aria-label="播放背景动画" hidden>▶</button>'''
 ring='''<div class="idea-mark" aria-hidden="true"><svg viewBox="0 0 420 420" fill="none"><circle cx="210" cy="210" r="180" fill="#e2ecf0"/><circle cx="210" cy="210" r="132" fill="#b8cbc6"/><circle cx="256" cy="236" r="68" fill="#315a79"/><circle cx="112" cy="112" r="28" fill="#dfb198"/></svg></div>'''
 def empty_state(category='all'):
     if category == 'tech':

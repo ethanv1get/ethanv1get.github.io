@@ -23,9 +23,10 @@ class Page(HTMLParser):
             assert attrs['id'] not in self.ids,'Duplicate anchor: '+attrs['id']
             self.ids.add(attrs['id'])
         if tag=='h1':self.h1+=1
-        if tag in ('a','img','script','link'):
+        if tag in ('a','img','script','link','video','source'):
             url=attrs.get('href',attrs.get('src'))
             if url is not None:self.links.append(url)
+        if tag=='video' and attrs.get('poster'):self.links.append(attrs['poster'])
         if tag=='img':assert 'alt' in attrs,'Images need an alt field'
 
 files=list(ROOT.glob('*.html'))
@@ -57,4 +58,5 @@ for post in posts:
         assert post['slug'] not in sitemap_paths,(post['slug'],'draft in sitemap')
 assert (ROOT/'CNAME').read_bytes()==(SOURCE/'CNAME').read_bytes()
 assert (ROOT/'assets/telegram.jpg').read_bytes()==(SOURCE/'assets/telegram.jpg').read_bytes()
+assert (ROOT/'assets/hero-video.mp4').is_file() and (ROOT/'assets/hero-poster.jpg').is_file()
 print(f'PASS: {len(files)} public pages, dates, schema, links, anchors and draft exclusion.')

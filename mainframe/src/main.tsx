@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, type RefObject } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
 
-const VIDEO_URL = 'https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260826_041744_63efcd78-bf7d-4039-99e2-2461e8a61903.mp4'
+const VIDEO_URL = '/assets/hero-video.mp4'
 const MESSAGE = '记录思考，探索技术，也收藏生活里值得记住的瞬间。'
 const navigation = [['文章', '/articles.html'], ['关于', '/about.html'], ['联系', '/contact.html']] as const
 
@@ -97,7 +97,7 @@ function App() {
     <nav id="mobile-menu" aria-label="手机导航" aria-hidden={!menuOpen} className={`mobile-menu ${menuOpen ? 'is-open' : ''}`}>{navigation.map(([label, href]) => <a href={href} key={label} tabIndex={menuOpen ? 0 : -1} onClick={() => setMenuOpen(false)}>{label}</a>)}</nav>
     <main>
       <section className="video-hero" aria-labelledby="hero-title" onTouchStart={startMobileVideo}>
-        <video ref={videoRef} src={VIDEO_URL} muted playsInline autoPlay={mobileMotion} loop={mobileMotion} preload="auto" aria-hidden="true" className="hero-video" onCanPlay={startMobileVideo} {...videoHandlers} />
+        <video ref={videoRef} src={VIDEO_URL} poster="/assets/hero-poster.jpg" muted playsInline autoPlay={mobileMotion} loop={mobileMotion} preload="auto" aria-hidden="true" className="hero-video" onCanPlay={startMobileVideo} {...videoHandlers} />
         <div className="video-shade" aria-hidden="true" />
         {needsPlay && <button type="button" className="mobile-play" onClick={startMobileVideo} aria-label="播放背景动画">▶</button>}
         <div className="hero-inner"><div className="hero-copy">
@@ -106,20 +106,7 @@ function App() {
           <p className="hero-typewriter">{displayed}{!done && <span className="typing-cursor" aria-hidden="true" />}</p>
           <div className="hero-actions"><a className="hero-primary" href="/articles.html">浏览文章</a><a className="hero-secondary" href="/about.html">关于 ethan</a></div>
         </div></div>
-        <div className="hero-bottom"><a href="#writing">继续阅读</a></div>
       </section>
-      <div className="editorial-page">
-        <section className="editorial-section writing-section" id="writing" aria-labelledby="writing-title">
-          <div className="section-label">文章与记录</div>
-          <div className="writing-grid"><h2 id="writing-title">从一个小小的疑问开始。</h2><div className="writing-copy"><p>可以认真讨论技术，也可以聊聊生活。不必每一次都有完整的答案，先把值得思考的事情写下来。</p><a href="/articles.html">浏览全部文章</a></div></div>
-          <div className="category-links"><a href="/tech.html"><span>技术与实践</span><small>工具、尝试和解决问题的过程</small></a><a href="/life.html"><span>生活与随笔</span><small>日常里的观察与发现</small></a></div>
-        </section>
-        <section className="editorial-section about-section" aria-labelledby="about-title">
-          <div className="section-label">关于</div>
-          <div className="about-grid"><h2 id="about-title"><a href="/about.html">关于 ethan</a></h2><div><p>最近在折腾 AI 工具，也在慢慢整理这个网站。这里会放一些技术上的尝试、生活里的观察，还有暂时没想明白的问题。</p><p>我想把过程也记下来：为什么开始，试过什么，哪里卡住，最后有什么发现。</p></div></div>
-        </section>
-        <footer className="home-footer"><div><span className="footer-brand">ethan.</span><p>给好奇心留一点空间。</p></div><div className="footer-links"><a href="https://t.me/ETHANV1">Telegram</a><a href="/contact.html">联系我</a></div><small>© 2026 ethan</small></footer>
-      </div>
     </main>
   </>
 }
