@@ -63,6 +63,7 @@ function App() {
   const videoHandlers = useMouseScrub(videoRef, !mobileMotion)
   const { displayed, done } = useTypewriter(MESSAGE)
   const [menuOpen, setMenuOpen] = useState(false)
+  const [needsPlay, setNeedsPlay] = useState(false)
   useEffect(() => {
     const media = window.matchMedia('(max-width: 800px), (pointer: coarse)')
     const update = () => setMobileMotion(media.matches)
@@ -72,13 +73,13 @@ function App() {
   useEffect(() => {
     const video = videoRef.current
     if (!video) return
-    if (mobileMotion) void video.play().catch(() => {})
-    else video.pause()
+    if (mobileMotion) void video.play().then(() => setNeedsPlay(false)).catch(() => setNeedsPlay(true))
+    else { video.pause(); setNeedsPlay(false) }
   }, [mobileMotion])
   const startMobileVideo = () => {
     if (!mobileMotion) return
     const video = videoRef.current
-    if (video && video.paused) void video.play().catch(() => {})
+    if (video && video.paused) void video.play().then(() => setNeedsPlay(false)).catch(() => setNeedsPlay(true))
   }
   useEffect(() => {
     if (!menuOpen) return
@@ -98,6 +99,7 @@ function App() {
       <section className="video-hero" aria-labelledby="hero-title" onTouchStart={startMobileVideo}>
         <video ref={videoRef} src={VIDEO_URL} muted playsInline autoPlay={mobileMotion} loop={mobileMotion} preload="auto" aria-hidden="true" className="hero-video" onCanPlay={startMobileVideo} {...videoHandlers} />
         <div className="video-shade" aria-hidden="true" />
+        {needsPlay && <button type="button" className="mobile-play" onClick={startMobileVideo} aria-label="播放背景动画">▶</button>}
         <div className="hero-inner"><div className="hero-copy">
           <p className="hero-intro">一个关于思考、技术与生活的个人空间。</p>
           <h1 id="hero-title">记录此刻，<br />也探索未知。</h1>
