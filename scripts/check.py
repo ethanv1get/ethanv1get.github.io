@@ -58,5 +58,4 @@ for post in posts:
         assert post['slug'] not in sitemap_paths,(post['slug'],'draft in sitemap')
 assert (ROOT/'CNAME').read_bytes()==(SOURCE/'CNAME').read_bytes()
 assert (ROOT/'assets/telegram.jpg').read_bytes()==(SOURCE/'assets/telegram.jpg').read_bytes()
-assert (ROOT/'assets/hero-video.mp4').is_file() and (ROOT/'assets/hero-poster.jpg').is_file()
 print(f'PASS: {len(files)} public pages, dates, schema, links, anchors and draft exclusion.')
