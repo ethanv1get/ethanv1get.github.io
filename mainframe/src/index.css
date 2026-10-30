@@ -44,7 +44,7 @@ a:focus-visible, button:focus-visible { outline: 3px solid #fff; outline-offset:
 .hero-primary { display: inline-flex; align-items: center; justify-content: center; min-height: 48px; padding: 10px 25px; border-radius: 3px; background: #fff; color: #1b282c; font-size: 15px; transition: background .2s ease, transform .2s ease; }
 .hero-primary:hover { background: #e7ecea; transform: translateY(-2px); }
 .hero-secondary { font-size: 15px; border-bottom: 1px solid #fff; padding: 9px 0 7px; }
-.hero-bottom { position: absolute; z-index: 2; bottom: 27px; left: clamp(22px, 5.5vw, 80px); right: clamp(22px, 5.5vw, 80px); display: flex; justify-content: space-between; gap: 20px; font-size: 12px; letter-spacing: .025em; color: #e9edeb; }
+.hero-bottom { position: absolute; z-index: 2; bottom: 27px; right: clamp(22px, 5.5vw, 80px); font-size: 12px; letter-spacing: .025em; color: #e9edeb; }
 .hero-bottom a { text-decoration: underline; text-underline-offset: 4px; }
 
 .editorial-page { background: var(--paper); padding: 0 clamp(22px, 5.5vw, 80px); }
@@ -81,8 +81,7 @@ a:focus-visible, button:focus-visible { outline: 3px solid #fff; outline-offset:
   .hero-copy h1 { font-size: clamp(44px, 10vw, 65px); line-height: 1.4; }
   .hero-typewriter { font-size: 17px; min-height: 3.2em; margin-top: 18px; }
   .hero-actions { margin-top: 23px; }
-  .hero-bottom { left: 22px; right: 22px; bottom: 20px; }
-  .mouse-hint { display: none; }
+  .hero-bottom { right: 22px; bottom: 20px; }
   .video-shade { background: linear-gradient(0deg, rgba(14,19,21,.88), rgba(14,19,21,.66) 33%, rgba(14,19,21,.14) 68%, rgba(14,19,21,.1)); }
   .editorial-section { padding: 64px 0 70px; }
   .section-label { margin-bottom: 27px; }

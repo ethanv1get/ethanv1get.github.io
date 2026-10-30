@@ -24,19 +24,21 @@ function useTypewriter(text: string) {
   return { displayed, done: displayed.length === text.length }
 }
 
-function useMouseScrub(videoRef: RefObject<HTMLVideoElement | null>) {
+function useMouseScrub(videoRef: RefObject<HTMLVideoElement | null>, enabled: boolean) {
   const prevX = useRef<number | null>(null)
   const targetTime = useRef(0)
   const seeking = useRef(false)
   const seekToTarget = () => {
     const video = videoRef.current
-    if (!video || seeking.current || !Number.isFinite(video.duration) || video.duration <= 0) return
+    if (!enabled || !video || seeking.current || !Number.isFinite(video.duration) || video.duration <= 0) return
     if (Math.abs(video.currentTime - targetTime.current) < 0.025) return
     seeking.current = true
     try { video.currentTime = targetTime.current } catch { seeking.current = false }
   }
   useEffect(() => {
+    if (enabled) targetTime.current = videoRef.current?.currentTime ?? 0
     const onMove = (event: MouseEvent) => {
+      if (!enabled) return
       const video = videoRef.current
       const currentX = event.clientX
       if (prevX.current === null) { prevX.current = currentX; return }
@@ -48,18 +50,36 @@ function useMouseScrub(videoRef: RefObject<HTMLVideoElement | null>) {
     }
     window.addEventListener('mousemove', onMove)
     return () => window.removeEventListener('mousemove', onMove)
-  }, [videoRef])
+  }, [videoRef, enabled])
   return {
-    onSeeked: () => { seeking.current = false; seekToTarget() },
-    onLoadedMetadata: () => { targetTime.current = videoRef.current?.currentTime ?? 0; seekToTarget() },
+    onSeeked: () => { seeking.current = false; if (enabled) seekToTarget() },
+    onLoadedMetadata: () => { targetTime.current = videoRef.current?.currentTime ?? 0; if (enabled) seekToTarget() },
   }
 }
 
 function App() {
   const videoRef = useRef<HTMLVideoElement>(null)
-  const videoHandlers = useMouseScrub(videoRef)
+  const [mobileMotion, setMobileMotion] = useState(() => window.matchMedia('(max-width: 800px), (pointer: coarse)').matches)
+  const videoHandlers = useMouseScrub(videoRef, !mobileMotion)
   const { displayed, done } = useTypewriter(MESSAGE)
   const [menuOpen, setMenuOpen] = useState(false)
+  useEffect(() => {
+    const media = window.matchMedia('(max-width: 800px), (pointer: coarse)')
+    const update = () => setMobileMotion(media.matches)
+    media.addEventListener('change', update)
+    return () => media.removeEventListener('change', update)
+  }, [])
+  useEffect(() => {
+    const video = videoRef.current
+    if (!video) return
+    if (mobileMotion) void video.play().catch(() => {})
+    else video.pause()
+  }, [mobileMotion])
+  const startMobileVideo = () => {
+    if (!mobileMotion) return
+    const video = videoRef.current
+    if (video && video.paused) void video.play().catch(() => {})
+  }
   useEffect(() => {
     if (!menuOpen) return
     const onKeyDown = (event: KeyboardEvent) => { if (event.key === 'Escape') setMenuOpen(false) }
@@ -75,8 +95,8 @@ function App() {
     </header>
     <nav id="mobile-menu" aria-label="手机导航" aria-hidden={!menuOpen} className={`mobile-menu ${menuOpen ? 'is-open' : ''}`}>{navigation.map(([label, href]) => <a href={href} key={label} tabIndex={menuOpen ? 0 : -1} onClick={() => setMenuOpen(false)}>{label}</a>)}</nav>
     <main>
-      <section className="video-hero" aria-labelledby="hero-title">
-        <video ref={videoRef} src={VIDEO_URL} muted playsInline preload="auto" aria-hidden="true" className="hero-video" {...videoHandlers} />
+      <section className="video-hero" aria-labelledby="hero-title" onTouchStart={startMobileVideo}>
+        <video ref={videoRef} src={VIDEO_URL} muted playsInline autoPlay={mobileMotion} loop={mobileMotion} preload="auto" aria-hidden="true" className="hero-video" onCanPlay={startMobileVideo} {...videoHandlers} />
         <div className="video-shade" aria-hidden="true" />
         <div className="hero-inner"><div className="hero-copy">
           <p className="hero-intro">一个关于思考、技术与生活的个人空间。</p>
@@ -84,7 +104,7 @@ function App() {
           <p className="hero-typewriter">{displayed}{!done && <span className="typing-cursor" aria-hidden="true" />}</p>
           <div className="hero-actions"><a className="hero-primary" href="/articles.html">浏览文章</a><a className="hero-secondary" href="/about.html">关于 ethan</a></div>
         </div></div>
-        <div className="hero-bottom"><span className="mouse-hint">移动鼠标，画面会跟随你。</span><a href="#writing">继续阅读</a></div>
+        <div className="hero-bottom"><a href="#writing">继续阅读</a></div>
       </section>
       <div className="editorial-page">
         <section className="editorial-section writing-section" id="writing" aria-labelledby="writing-title">
