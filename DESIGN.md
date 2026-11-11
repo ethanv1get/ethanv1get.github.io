@@ -1,5 +1,12 @@
 # ethan. / Personal publication
 Brief: A personal website about AI tool experiments, technology and everyday observations. Only existing approved writing; no invented career, project or audience metrics. Independent pages; home is a single cover. Existing React/Vite homepage and Python CMS stay.
+
+## 2026-11-11 restyle: Dark Engineer (current direction)
+- The mustard cover and paper interior are replaced by a dark theme after the clean-and-personal template 62-dark-engineer: near-black ground `#0a0a0a`, card `#111111`, text `#e5e5e5`, rules `#262626`, Space Grotesk display + JetBrains Mono labels.
+- Home keeps one screen: annotation `[ PERSONAL SITE // 2026 ]`, the same headline and copy, then `{ PROFILE }` (real About copy), `{ WRITING }` (real article rows), `{ CONTACT }` (real links). No invented projects, career timeline, metrics or tech stack.
+- Static by choice: no entrance animation, no animated counters, no pulsing dot — the earlier no-motion preference is kept.
+- Contact page: Telegram and Email icons only, Telegram first, direct jump; no account text, no QR code, no copy controls.
+- The cold blue-white minimalist redesign (Kombai Halcyon 404 reference) was abandoned by the user on 2026-11-11 in favour of this dark version.
 Concepts considered (originality / fit / feasibility / portability; lower portability is better):
 - Personal publication cover, anchored in the actual first essay about beginning to write. Name becomes the cover image; publication typography continues through article titles. 4/5/5/3. Chosen for expressive static composition and honest content.
 - Lab notebook, anchored in AI tool experiments. Tabbed notes and technical annotations. 3/4/5/4. Rejected as too close to developer templates.
