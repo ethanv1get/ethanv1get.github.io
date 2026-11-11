@@ -6,7 +6,7 @@ function App() {
     <a className="skip" href="#main">跳到正文</a>
     <header className="cover-header"><span>ethan 的个人网站</span><a href="https://t.me/ETHANV1">在 Telegram 找我</a></header>
     <main id="main" tabIndex={-1} className="cover-main">
-      <div className="cover-intro"><p className="cover-annotation">[ PERSONAL SITE // 2026 ]</p><p className="cover-kicker">思考 / 技术 / 生活</p><h1>记录此刻，<br/>也探索未知。</h1><p className="cover-meta"><span className="status-dot" />记录思考，探索技术，也收藏生活里值得记住的瞬间。</p><p className="cover-note">把过程也记下来。<br/>为什么开始，试过什么，最后有什么发现。</p></div>
+      <div className="cover-intro"><p className="cover-annotation">[ PERSONAL SITE // 2026 ]</p><p className="cover-kicker">思考 / 技术 / 生活</p><h1>记录此刻，<br/>也探索未知。</h1><p className="cover-meta"><span className="status-dot" />一个持续修订的思考现场。</p></div>
       <div className="cover-index"><nav aria-label="主导航">
         <a href="/articles.html"><span>文章与记录</span><small>读一些文字</small></a>
         <a href="/about.html"><span>关于 ethan</span><small>认识我</small></a>
