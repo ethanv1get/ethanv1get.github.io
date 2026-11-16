@@ -5,14 +5,8 @@
    Static by choice: no entrance animation, no animated counters,
    no pulsing dot — the earlier no-motion preference is kept. */
 :root{
-  --bg:#0a0a0a; --bg-card:#111111; --bg-card-hover:#161616;
-  --text:#e5e5e5; --text-secondary:#a3a3a3; --text-muted:#525252;
-  --border:#262626; --accent:#e5e5e5; --green:#22c55e;
-  --tag-bg:rgba(229,229,229,.08); --pill-bg:rgba(229,229,229,.06); --pill-border:rgba(229,229,229,.12);
-  --accent-dim:rgba(229,229,229,.05);
   --display:'Space Grotesk','PingFang SC','Microsoft YaHei',sans-serif;
   --mono:'JetBrains Mono',ui-monospace,Menlo,Consolas,monospace;
-  color-scheme:dark;
   font-family:'Space Grotesk',-apple-system,BlinkMacSystemFont,'PingFang SC','Microsoft YaHei',sans-serif;
   font-synthesis:none;
 }
@@ -21,10 +15,10 @@ html{scroll-behavior:smooth;scroll-padding-top:96px}
 body{margin:0;background:var(--bg);color:var(--text);font-size:15px;line-height:1.7;-webkit-font-smoothing:antialiased;overflow-x:hidden;position:relative}
 /* faint grid, like the template's fixed grid background */
 body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;
-  background-image:linear-gradient(rgba(255,255,255,.02) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.02) 1px,transparent 1px);
+  background-image:linear-gradient(var(--grid-line) 1px,transparent 1px),linear-gradient(90deg,var(--grid-line) 1px,transparent 1px);
   background-size:60px 60px}
-::selection{background:rgba(229,229,229,.2);color:var(--text)}
-a{color:inherit;text-decoration:none;touch-action:manipulation;-webkit-tap-highlight-color:rgba(229,229,229,.2)}
+::selection{background:var(--selection-bg);color:var(--text)}
+a{color:inherit;text-decoration:none;touch-action:manipulation;-webkit-tap-highlight-color:var(--selection-bg)}
 button{font:inherit;touch-action:manipulation}
 a:focus-visible,button:focus-visible{outline:2px solid var(--text);outline-offset:4px}
 a:active,button:active{opacity:.8}
@@ -45,7 +39,7 @@ p{overflow-wrap:anywhere}
 main:focus{outline:none}
 
 /* ---------- header ---------- */
-.site-header{position:sticky;top:0;z-index:50;display:flex;justify-content:space-between;align-items:center;gap:24px;min-height:64px;background:rgba(10,10,10,.8);backdrop-filter:blur(12px);border-bottom:1px solid var(--border)}
+.site-header{position:sticky;top:0;z-index:50;display:flex;justify-content:space-between;align-items:center;gap:24px;min-height:64px;background:var(--header-bg);backdrop-filter:blur(12px);border-bottom:1px solid var(--border)}
 .brand,.footer-brand{display:inline-block;font-weight:700;letter-spacing:-.03em;line-height:1.15}
 .brand{padding:12px 0;font-size:22px}
 .brand span{color:var(--green)}
@@ -68,8 +62,8 @@ nav[aria-label="主导航"] a::after{display:none}
 .status-dot{width:6px;height:6px;border-radius:50%;background:var(--green);flex:none}
 .actions{display:flex;align-items:center;gap:24px;flex-wrap:wrap;margin-top:30px}
 .button{display:inline-flex;justify-content:center;align-items:center;min-height:44px;padding:10px 24px;border:1px solid var(--border);border-radius:6px;font-family:var(--mono);font-size:.75rem;text-transform:uppercase;letter-spacing:.05em;color:var(--text-secondary);transition:background .2s,color .2s,border-color .2s}
-.button.primary{background:var(--text);border-color:var(--text);color:#0a0a0a}
-.button.primary:hover{background:#fff;border-color:#fff;color:#0a0a0a}
+.button.primary{background:var(--text);border-color:var(--text);color:var(--on-accent)}
+.button.primary:hover{background:var(--accent-hover);border-color:var(--accent-hover);color:var(--on-accent)}
 .button.secondary{padding-inline:0;border:0;border-bottom:1px solid var(--border);border-radius:0}
 .button.secondary:hover{color:var(--text);border-bottom-color:var(--text)}
 .button:active{translate:0 1px}
@@ -77,7 +71,7 @@ nav[aria-label="主导航"] a::after{display:none}
 
 /* ---------- cards (template 62) ---------- */
 .card{background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:2rem;margin-bottom:2rem;transition:border-color .3s}
-.card:hover{border-color:rgba(229,229,229,.15)}
+.card:hover{border-color:var(--card-border-hover)}
 .card-label{font-family:var(--mono);font-size:.7rem;color:var(--text-muted);letter-spacing:.1em;text-transform:uppercase;margin-bottom:1.5rem}
 .profile-grid{display:flex;flex-direction:column;gap:1.25rem}
 .profile-entry{display:flex;align-items:baseline;gap:1rem}
@@ -103,7 +97,7 @@ nav[aria-label="主导航"] a::after{display:none}
 .section-action:hover,.text-link:hover{color:var(--text);border-bottom-color:var(--text)}
 .selected{border-top:1px solid var(--border)}
 .post-card{display:block;border:1px solid var(--border);border-radius:12px;background:var(--bg-card);margin-bottom:1rem;transition:border-color .3s,background .2s}
-.post-card:hover{border-color:rgba(229,229,229,.15);background:var(--bg-card-hover)}
+.post-card:hover{border-color:var(--card-border-hover);background:var(--bg-card-hover)}
 .post-info{display:grid;grid-template-columns:170px minmax(0,1fr) 100px;column-gap:28px;row-gap:12px;padding:26px 28px}
 .post-info .meta{grid-column:1;grid-row:1 / span 3;align-self:start;align-items:flex-start;flex-direction:column;gap:8px;padding-top:5px}
 .meta{display:flex;flex-wrap:wrap;align-items:center;gap:18px;font-family:var(--mono);font-size:.72rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em}
@@ -130,9 +124,9 @@ nav[aria-label="主导航"] a::after{display:none}
 .filters{display:flex;gap:10px;flex-wrap:wrap;align-items:center;border-bottom:1px solid var(--border);padding:12px 0 24px}
 .filter{display:inline-flex;align-items:center;gap:10px;min-height:40px;padding:8px 16px;border:1px solid var(--pill-border);border-radius:20px;background:var(--pill-bg);font-family:var(--mono);font-size:.72rem;text-transform:uppercase;letter-spacing:.05em;color:var(--text-secondary);transition:background .2s,color .2s,border-color .2s}
 .filter span{font-size:.7rem;font-variant-numeric:tabular-nums;color:var(--text-muted)}
-.filter:hover{border-color:rgba(229,229,229,.25);color:var(--text)}
-.filter[aria-current="page"]{background:var(--text);border-color:var(--text);color:#0a0a0a}
-.filter[aria-current="page"] span{color:#525252}
+.filter:hover{border-color:var(--control-border-hover);color:var(--text)}
+.filter[aria-current="page"]{background:var(--text);border-color:var(--text);color:var(--on-accent)}
+.filter[aria-current="page"] span{color:var(--on-accent-muted)}
 .archive-note{font-size:.75rem;color:var(--text-muted);margin-top:22px;font-family:var(--mono)}
 .empty{padding:48px 0;border-bottom:1px solid var(--border)}
 .empty-symbol{display:none}

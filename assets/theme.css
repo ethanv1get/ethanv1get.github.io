@@ -1,0 +1,52 @@
+/* Shared by the Vite homepage and generated pages. */
+:root {
+  color-scheme: light;
+  --bg: #f7f7f5;
+  --bg-card: #ffffff;
+  --bg-card-hover: #f0f1ee;
+  --text: #17191c;
+  --text-secondary: #515660;
+  --text-muted: #646a73;
+  --border: #d9dce0;
+  --accent: #17191c;
+  --accent-hover: #30343a;
+  --on-accent: #f7f7f5;
+  --on-accent-muted: #d0d4d8;
+  --green: #15803d;
+  --tag-bg: rgba(23, 25, 28, .06);
+  --pill-bg: rgba(23, 25, 28, .04);
+  --pill-border: rgba(23, 25, 28, .18);
+  --accent-dim: rgba(23, 25, 28, .045);
+  --selection-bg: rgba(23, 25, 28, .16);
+  --grid-line: rgba(23, 25, 28, .035);
+  --header-bg: rgba(247, 247, 245, .9);
+  --card-border-hover: rgba(23, 25, 28, .3);
+  --control-border-hover: rgba(23, 25, 28, .4);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+    --bg: #0a0a0a;
+    --bg-card: #111111;
+    --bg-card-hover: #161616;
+    --text: #e5e5e5;
+    --text-secondary: #a3a3a3;
+    --text-muted: #858585;
+    --border: #262626;
+    --accent: #e5e5e5;
+    --accent-hover: #ffffff;
+    --on-accent: #0a0a0a;
+    --on-accent-muted: #525252;
+    --green: #22c55e;
+    --tag-bg: rgba(229, 229, 229, .08);
+    --pill-bg: rgba(229, 229, 229, .06);
+    --pill-border: rgba(229, 229, 229, .12);
+    --accent-dim: rgba(229, 229, 229, .05);
+    --selection-bg: rgba(229, 229, 229, .2);
+    --grid-line: rgba(255, 255, 255, .02);
+    --header-bg: rgba(10, 10, 10, .8);
+    --card-border-hover: rgba(229, 229, 229, .15);
+    --control-border-hover: rgba(229, 229, 229, .25);
+  }
+}
