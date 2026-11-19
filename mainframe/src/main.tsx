@@ -1,7 +1,10 @@
+import { useRef } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
 
 function App() {
+  const photoDialog = useRef<HTMLDialogElement>(null)
+
   return <div className="cover">
     <a className="skip" href="#main">跳到正文</a>
     <header className="cover-header"><span>ethan 的个人网站</span><a href="https://t.me/ETHANV1">在 Telegram 找我</a></header>
@@ -13,8 +16,31 @@ function App() {
         <a href="/contact.html"><span>联系</span><small>聊聊你的发现</small></a>
       </nav></div>
     </main>
-    <div className="cover-wordmark" aria-hidden="true">ethan.</div>
+    <div className="cover-signature">
+      <div className="cover-wordmark" aria-hidden="true">ethan.</div>
+      <button
+        className="cover-keepsake"
+        type="button"
+        aria-label="放大小鸭子"
+        aria-haspopup="dialog"
+        title="放大小鸭子"
+        onClick={() => photoDialog.current?.showModal()}
+      >
+        <img src="/assets/duck-keepsake-transparent.png" alt="戴粉色蝴蝶结、围着 FUN DAY 围兜的小鸭子" width="1254" height="1254" />
+      </button>
+    </div>
     <footer className="cover-footer"><span>保持好奇，实现想法。</span><span>© {new Date().getFullYear()} ethan</span></footer>
+    <dialog
+      ref={photoDialog}
+      className="keepsake-dialog"
+      aria-label="小鸭子大图"
+      onClick={event => {
+        if (event.target === event.currentTarget) event.currentTarget.close()
+      }}
+    >
+      <button className="keepsake-close" type="button" autoFocus onClick={() => photoDialog.current?.close()}>关闭</button>
+      <img src="/assets/duck-keepsake-transparent.png" alt="戴粉色蝴蝶结、围着 FUN DAY 围兜的小鸭子大图" width="1254" height="1254" />
+    </dialog>
   </div>
 }
 createRoot(document.getElementById('root')!).render(<App />)
