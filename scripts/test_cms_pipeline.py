@@ -16,6 +16,7 @@ class CmsPublishingTests(unittest.TestCase):
         self.tmp=TemporaryDirectory(prefix='cms-publish-test-',dir=ROOT.parent)
         self.root=Path(self.tmp.name)/'site'
         shutil.copytree(ROOT,self.root,ignore=shutil.ignore_patterns('.git','_site','__pycache__','node_modules'))
+        (self.root/'newsletter.json').write_text('{"buttondown_username":""}',encoding='utf-8')
         self.original=(self.root/'articles.json').read_bytes()
         self.posts=json.loads(self.original)
     def tearDown(self):self.tmp.cleanup()
@@ -80,5 +81,33 @@ class CmsPublishingTests(unittest.TestCase):
         self.assertEqual(len(list((self.root/'_site').glob('*.html'))),7)
         self.posts=json.loads(self.original);copy=dict(self.posts[0]);copy['slug']='hello';self.posts.append(copy)
         self.save();self.build(ok=False)
+
+    def test_email_form_requires_a_verified_username_and_keeps_its_route_reserved(self):
+        config = self.root / 'newsletter.json'
+        config.write_text('{"buttondown_username":""}', encoding='utf-8')
+        self.build()
+        output = self.root / '_site'
+        self.assertFalse((output / 'subscribe.html').exists())
+        self.assertNotIn('href="subscribe.html"', (output / 'articles.html').read_text())
+        config.write_text('{"buttondown_username":"ethan-fixture"}', encoding='utf-8')
+        self.build()
+        form = (output / 'subscribe.html').read_text()
+        self.assertIn('action="https://buttondown.com/api/emails/embed-subscribe/ethan-fixture" method="post"', form)
+        self.assertIn('name="email" type="email"', form)
+        self.assertIn('required', form)
+        self.assertNotIn('推送加', form)
+        for name in ('articles.html', 'hello.html'):
+            self.assertIn('href="subscribe.html"', (output / name).read_text())
+        self.assertIn('subscribe.html', (output / 'sitemap.xml').read_text())
+        self.assertFalse((output / 'newsletter.json').exists())
+        self.posts.append({**self.posts[0], 'slug': 'subscribe'})
+        self.save();self.build(ok=False)
+
+    def test_invalid_subscription_config_preserves_previous_preview(self):
+        self.build()
+        original = (self.root / '_site/index.html').read_bytes()
+        (self.root / 'newsletter.json').write_text('{"buttondown_username":"../wrong\\\""}', encoding='utf-8')
+        self.build(ok=False)
+        self.assertEqual((self.root / '_site/index.html').read_bytes(), original)
 
 if __name__=='__main__':unittest.main()

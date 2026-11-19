@@ -7,7 +7,7 @@ import os
 from xml.etree import ElementTree
 import re
 import json
-from content import load_articles, public_articles, STATIC_PAGES
+from content import load_articles, public_articles, show_subscription_page, subscription_username, STATIC_PAGES, SUBSCRIBE_PAGE
 
 SOURCE=Path(__file__).resolve().parents[1]
 ROOT=Path(os.environ.get('SITE_OUTPUT',str(SOURCE))).resolve()
@@ -28,9 +28,16 @@ class Page(HTMLParser):
             if url is not None:self.links.append(url)
         if tag=='video' and attrs.get('poster'):self.links.append(attrs['poster'])
         if tag=='img':assert 'alt' in attrs,'Images need an alt field'
+        if tag=='form':
+            assert attrs.get('method','').lower()=='post','Subscription form must use POST'
+            expected_action='https://buttondown.com/api/emails/embed-subscribe/'+subscription_username(SOURCE)
+            assert attrs.get('action')==expected_action,'Subscription form must use the configured Buttondown username'
 
 files=list(ROOT.glob('*.html'))
-assert {p.name for p in files}==set(STATIC_PAGES)|{p['slug'] for p in public},'Unexpected/missing generated pages; use scripts/publish.py for a clean build'
+expected=set(STATIC_PAGES)|{p['slug'] for p in public}
+if show_subscription_page(SOURCE):
+    expected.add(SUBSCRIBE_PAGE)
+assert {p.name for p in files}==expected,'Unexpected/missing generated pages; use scripts/publish.py for a clean build'
 for file in files:
     text=file.read_text(encoding='utf-8');page=Page(text)
     assert page.h1==1,(file.name,'h1 count')

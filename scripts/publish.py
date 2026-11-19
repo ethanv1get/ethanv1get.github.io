@@ -12,8 +12,9 @@ OUTPUT = ROOT / '_site'
 if OUTPUT.is_symlink():
     raise ValueError('_site must not be a symbolic link')
 # Validate editorial data before touching the last local preview.
-from content import load_articles
+from content import load_articles, subscription_username
 load_articles(ROOT / 'articles.json')
+subscription_username(ROOT)
 mainframe_dist = ROOT / 'mainframe' / 'dist'
 if not (mainframe_dist / 'index.html').is_file():
     raise ValueError('Mainframe build missing; run npm ci and npm run build in mainframe first')

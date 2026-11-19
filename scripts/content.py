@@ -4,14 +4,34 @@ from datetime import date
 from html import unescape
 from pathlib import Path
 import json
+import os
 import re
 
 STATIC_PAGES = ('index.html', 'articles.html', 'tech.html', 'life.html', 'about.html', 'contact.html', '404.html')
+SUBSCRIBE_PAGE = 'subscribe.html'
 CATEGORY_LABELS = {'life': '随笔', 'tech': '技术'}
 
 
+def subscription_username(root):
+    path = root / 'newsletter.json'
+    if not path.is_file():
+        return ''
+    config = json.loads(path.read_text(encoding='utf-8'))
+    username = config.get('buttondown_username', '') if isinstance(config, dict) else None
+    if not isinstance(username, str) or (username and not re.fullmatch(r'[a-zA-Z0-9_-]{1,80}', username)):
+        raise ValueError('newsletter.json 中的 buttondown_username 需填写 Buttondown 用户名。')
+    return username
+
+
+def show_subscription_page(root):
+    return bool(subscription_username(root)) or os.environ.get('ETHAN_EMAIL_PREVIEW') == '1'
+
+
 def load_articles(path):
-    records = json.loads(Path(path).read_text(encoding='utf-8'))
+    return validate_articles(json.loads(Path(path).read_text(encoding='utf-8')))
+
+
+def validate_articles(records):
     if not isinstance(records, list):
         raise ValueError('articles.json 必须是文章列表。')
     posts, seen = [], set()
@@ -27,7 +47,7 @@ def load_articles(path):
             raise ValueError(f'《{title}》的网址需使用小写英文、数字和连字符。')
         slug = slug.strip()
         slug = slug if slug.endswith('.html') else slug + '.html'
-        if slug in STATIC_PAGES:
+        if slug in STATIC_PAGES or slug == SUBSCRIBE_PAGE:
             raise ValueError(f'《{title}》的网址 {slug} 与网站页面冲突，请换一个短名。')
         if slug in seen:
             raise ValueError(f'文章网址重复：{slug}。请使用不同的网址名称。')

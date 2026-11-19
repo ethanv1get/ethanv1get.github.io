@@ -5,7 +5,7 @@ from pathlib import Path
 from html import escape, unescape
 import json
 import os
-from content import load_articles, public_articles
+from content import load_articles, public_articles, show_subscription_page, subscription_username, SUBSCRIBE_PAGE
 import re
 from datetime import date
 ROOT=Path(__file__).resolve().parents[1]
@@ -14,6 +14,12 @@ POSTS=public_articles(ALL_POSTS)
 OUTPUT=Path(os.environ.get('SITE_OUTPUT',str(ROOT))).resolve()
 CURRENT='aria-current="page"'
 BASE='https://ethanv1.top/'
+buttondown_username = subscription_username(ROOT)
+subscribe_enabled = show_subscription_page(ROOT)
+subscribe_link = (
+    f'<a class="text-link subscribe-link" href="{SUBSCRIBE_PAGE}">邮件订阅更新</a>'
+    if subscribe_enabled else ''
+)
 def arrow(direction=None): return ''
 def link(href,text,primary=False,direction='→'): return f'<a class="button {"primary" if primary else "secondary"}" href="{href}">{text}{"" if primary else " " + arrow(direction)}</a>'
 def article_length(post):
@@ -72,9 +78,9 @@ def shell(file,title,desc,active,content):
 <meta name="color-scheme" content="light dark">
 <meta name="theme-color" content="#f7f7f5" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#0a0a0a" media="(prefers-color-scheme: dark)"><title>{escape(title)} · ethan.</title><meta name="description" content="{escape(desc)}">
-{'<meta name="robots" content="noindex">' if file=='404.html' else ''}
+{'<meta name="robots" content="noindex">' if file == '404.html' or (file == SUBSCRIBE_PAGE and not buttondown_username) else ''}
 <link rel="canonical" href="{canonical}"><meta property="og:type" content="{'article' if any(post['slug']==file for post in POSTS) else 'website'}"><meta property="og:locale" content="zh_CN"><meta property="og:site_name" content="ethan."><meta property="og:title" content="{escape(title)} · ethan."><meta property="og:description" content="{escape(desc)}"><meta property="og:url" content="{canonical}"><meta property="og:image" content="{BASE}assets/og.png?v=20261030-cover"><meta property="og:image:alt" content="ethan. 记录此刻，也探索未知。"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="{escape(title)} · ethan."><meta name="twitter:description" content="{escape(desc)}"><meta name="twitter:image" content="{BASE}assets/og.png?v=20261030-cover">
-<link rel="icon" href="assets/favicon.svg?v=20261112-dark" type="image/svg+xml"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet"><link rel="stylesheet" href="assets/theme.css?v=20261116-system"><link rel="stylesheet" href="style.css?v=20261116-system"><script src="site.js?v=20261030-print-edition" defer></script><script type="application/ld+json">{json.dumps(schema,ensure_ascii=False).replace('<', chr(92) + 'u003c')}</script></head>
+<link rel="icon" href="assets/favicon.svg?v=20261112-dark" type="image/svg+xml"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet"><link rel="stylesheet" href="assets/theme.css?v=20261116-system"><link rel="stylesheet" href="style.css?v=20261119-email"><script src="site.js?v=20261030-print-edition" defer></script><script type="application/ld+json">{json.dumps(schema,ensure_ascii=False).replace('<', chr(92) + 'u003c')}</script></head>
 <body id="top"><div class="noise-overlay"></div><a class="skip" href="#main">跳到正文</a><div class="site-shell"><header class="site-header"><a class="brand" href="index.html" translate="no" aria-label="ethan. 首页">ethan<span>.</span></a><nav aria-label="主导航">{nav}</nav></header><main id="main" tabindex="-1">{content}</main>
 <footer class="site-footer"><div class="footer-top"><div><a class="footer-brand" href="index.html" translate="no">ethan.</a><p>给好奇心留一点空间。</p></div><div class="footer-contact"><p class="footer-label">保持联系</p><div class="footer-links"><a href="https://t.me/ETHANV1">Telegram</a><a href="mailto:ethansunv1@gmail.com">写封邮件</a></div></div></div><div class="footer-bottom"><span>© <span data-year>2026</span> ethan</span><a class="to-top" href="#top">回到顶部 {arrow('↑')}</a></div></footer></div></body></html>'''
 
@@ -102,10 +108,11 @@ home=f'''<section class="hero" aria-labelledby="home-title"><div class="annotati
 
 write('index.html','记录此刻，也探索未知','ethan 的个人空间，记录思考、探索技术，也收藏生活里值得记住的瞬间。','home',home)
 
+archive_subscribe = f'<div class="archive-subscribe">{subscribe_link}</div>' if subscribe_link else ''
 for filename,category,label in [('articles.html','all','全部'),('tech.html','tech','技术'),('life.html','life','生活')]:
     visible=[p for p in POSTS if category=='all' or p['category']==category]
     filters=''.join(f'<a class="filter" href="{f}" {CURRENT if c==category else ""}>{n}<span>{len([p for p in POSTS if c=="all" or p["category"]==c])}</span></a>' for f,c,n in [('articles.html','all','全部'),('tech.html','tech','技术'),('life.html','life','生活')])
-    content=f'''<section class="page-heading">{page_video}<h1>文章与记录</h1><p>技术与实践，生活与随笔。<br>不急着给出答案，先把值得思考的事情写下来。</p></section><section class="archive section" aria-label="{label}文章"><nav class="filters" aria-label="文章分类">{filters}</nav><div class="archive-results">{''.join(card(p,POSTS.index(p)+1,2) for p in visible) if visible else empty_state(category)}</div><p class="archive-note">{f'共 {len(visible)} 篇记录' if visible else '当前分类 0 篇记录'}{'，其中 1 篇为待确认草稿。' if any(p['draft'] for p in visible) else '。'}</p></section>'''
+    content=f'''<section class="page-heading">{page_video}<h1>文章与记录</h1><p>技术与实践，生活与随笔。<br>不急着给出答案，先把值得思考的事情写下来。</p></section><section class="archive section" aria-label="{label}文章"><nav class="filters" aria-label="文章分类">{filters}</nav><div class="archive-results">{''.join(card(p,POSTS.index(p)+1,2) for p in visible) if visible else empty_state(category)}</div><p class="archive-note">{f'共 {len(visible)} 篇记录' if visible else '当前分类 0 篇记录'}{'，其中 1 篇为待确认草稿。' if any(p['draft'] for p in visible) else '。'}</p>{archive_subscribe}</section>'''
     write(filename,('文章' if category=='all' else label+'文章'),'ethan 的'+label+'文章与记录。'+('技术文章尚未发布，欢迎浏览其他文字。' if not visible else '关于思考、实践与生活的文字。'),'articles',content)
 
 for p in POSTS:
@@ -126,18 +133,54 @@ for p in POSTS:
         toc_links = ''.join(f'<a href="#{escape(anchor)}">{escape(label)} {arrow("→")}</a>' for anchor, label in headings)
         if toc_links:
             toc = '<aside class="article-toc" aria-label="文章目录"><span>这篇文字里</span>' + toc_links + '</aside>'
-    content=f'''<article class="article-page"><div class="article-masthead">{page_video}<a class="text-link back-link" href="articles.html">{arrow('←')} 返回文章列表</a><header class="article-heading"><div class="meta"><span>{escape(p['label'])}</span>{publication_date(p)}{'<span class="badge">待确认草稿</span>' if p['draft'] else ''}</div><h1>{escape(p['title'])}</h1><p class="byline">文 / <span translate="no">ethan</span></p></header></div><div class="article-layout">{toc}<div class="prose">{'<p class="notice">这是一篇为展示博客阅读效果撰写的开站草稿，待 ethan 确认后再作为正式文章发布。</p>' if p['draft'] else ''}{body}<div class="article-end"><span class="end-dot" aria-hidden="true"></span><p>想法不必停在这里。</p><a class="text-link" href="contact.html">与 ethan 交流 {arrow('→')}</a></div><div class="article-bottom">{link('articles.html','返回文章列表')}</div></div></div></article>'''
+    content=f'''<article class="article-page"><div class="article-masthead">{page_video}<a class="text-link back-link" href="articles.html">{arrow('←')} 返回文章列表</a><header class="article-heading"><div class="meta"><span>{escape(p['label'])}</span>{publication_date(p)}{'<span class="badge">待确认草稿</span>' if p['draft'] else ''}</div><h1>{escape(p['title'])}</h1><p class="byline">文 / <span translate="no">ethan</span></p></header></div><div class="article-layout">{toc}<div class="prose">{'<p class="notice">这是一篇为展示博客阅读效果撰写的开站草稿，待 ethan 确认后再作为正式文章发布。</p>' if p['draft'] else ''}{body}<div class="article-end"><span class="end-dot" aria-hidden="true"></span><p>想法不必停在这里。</p><a class="text-link" href="contact.html">与 ethan 交流 {arrow('→')}</a>{subscribe_link}</div><div class="article-bottom">{link('articles.html','返回文章列表')}</div></div></div></article>'''
     write(p['slug'],p['title'],p['summary']+(' 本文为待确认开站草稿。' if p['draft'] else ''),'articles',content)
 
 write('about.html','关于','认识 ethan：最近在折腾 AI 工具，也在慢慢整理这个网站，记录技术上的尝试、生活里的观察，以及还没想明白的问题。','about',f'''<section class="page-heading about-heading">{page_video}<h1>你好，我是 <span translate="no">ethan</span>。</h1></section><section class="about-detail section"><aside class="about-margin"><span>关注的方向</span><p>AI 工具<br>技术实践<br>生活观察</p></aside><div class="about-body"><p>最近在折腾 AI 工具，也在慢慢整理这个网站。这里会放一些技术上的尝试、生活里的观察，还有暂时没想明白的问题。</p><p>我想把过程也记下来：为什么开始，试过什么，哪里卡住，最后有什么发现。</p><p>也欢迎你来聊聊自己的发现。</p><div class="actions">{link('contact.html','联系我',True)}{link('articles.html','浏览文章')}</div></div></section>''')
 
 write('contact.html','联系','通过 Telegram @ETHANV1 联系 ethan，或写封邮件，聊聊你的问题、想法与日常发现。','contact',f'''<section class="page-heading">{page_video}<h1>聊聊你的想法</h1><p>交流一个问题，分享一篇文章，<br>或者，简单打个招呼。</p></section><section class="contact-section section"><div class="contact-icons"><a class="contact-icon" href="https://t.me/ETHANV1" aria-label="在 Telegram 上联系 ethan"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg><span>Telegram</span></a><a class="contact-icon" href="mailto:ethansunv1@gmail.com" aria-label="给 ethan 写邮件"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 6L2 7"/></svg><span>Email</span></a></div></section>''')
+if subscribe_enabled:
+    if buttondown_username:
+        form = f'''<form class="subscribe-form" action="https://buttondown.com/api/emails/embed-subscribe/{escape(buttondown_username)}" method="post">
+          <label for="subscribe-email">你的邮箱</label>
+          <div class="subscribe-fields">
+            <input id="subscribe-email" name="email" type="email" autocomplete="email" inputmode="email" placeholder="you@example.com" aria-describedby="subscribe-help" required>
+            <input type="hidden" name="embed" value="1">
+            <button class="button primary" type="submit">订阅更新</button>
+          </div>
+          <p class="subscribe-help" id="subscribe-help">提交后，请在邮件里确认订阅。每封更新邮件都可以退订。</p>
+        </form>'''
+    else:
+        form = '''<div class="subscribe-form" aria-label="邮件订阅布局预览">
+          <label for="subscribe-email">你的邮箱</label>
+          <div class="subscribe-fields">
+            <input id="subscribe-email" type="email" placeholder="you@example.com" disabled>
+            <button class="button primary" type="button" disabled>订阅更新</button>
+          </div>
+          <p class="subscribe-help" role="status">本地预览，正在绑定订阅账号。</p>
+        </div>'''
+    write(
+        SUBSCRIBE_PAGE, '邮件订阅', '通过邮件收到 ethan. 的新文章，随时可以退订。', 'articles',
+        f"""
+        <section class="page-heading subscribe-heading">
+          <h1>把新文章寄给你。</h1>
+          <p>有新文章时，把标题、摘要和原文链接发到你的邮箱。</p>
+        </section>
+        <section class="subscribe-details" aria-label="订阅新文章">
+          {form}
+          <p class="subscribe-provider">订阅和邮件发送由 <a href="https://buttondown.com/" rel="external">Buttondown</a> 提供。</p>
+        </section>
+        <a class="text-link subscribe-back" href="articles.html">返回文章</a>
+        """,
+    )
+else:
+    (OUTPUT / SUBSCRIBE_PAGE).unlink(missing_ok=True)
 write('404.html','页面未找到','这个页面暂时没有内容。从首页或文章列表继续探索 ethan 的个人空间。','',f'''<section class="not-found">{page_video}<span class="error-code" role="img" aria-label="错误 404">4<span class="error-zero" aria-hidden="true"></span>4</span><h1>想法还在，<br>这一页走丢了。</h1><p>这个地址可能已经移动，或暂时不存在。<br>换一个入口，继续探索。</p><div class="actions">{link('/index.html','返回首页',True)}{link('/articles.html','浏览文章')}</div></section>''')
 # Root-relative assets/links for the custom 404 even when a missing URL is nested.
 p=OUTPUT/'404.html'; html=p.read_text()
 import re
 html=re.sub(r'(href|src)="(?!https?:|mailto:|#|/)([^"]+)"',r'\1="/\2"',html); p.write_text(html)
-(OUTPUT/'sitemap.xml').write_text('<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'+''.join(f'<url><loc>{BASE+("" if f=="index.html" else f)}</loc></url>' for f in dict.fromkeys(['index.html','articles.html','tech.html','life.html'] + [p['slug'] for p in POSTS] + ['about.html','contact.html']))+'</urlset>\n')
+(OUTPUT/'sitemap.xml').write_text('<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'+''.join(f'<url><loc>{BASE+("" if f=="index.html" else f)}</loc></url>' for f in dict.fromkeys(['index.html','articles.html','tech.html','life.html'] + [p['slug'] for p in POSTS] + ['about.html','contact.html'] + ([SUBSCRIBE_PAGE] if buttondown_username else [])))+'</urlset>\n')
 (OUTPUT/'robots.txt').write_text('User-agent: *\nAllow: /\nSitemap: '+BASE+'sitemap.xml\n')
-print('Built',7+len(POSTS),'public pages;',len(POSTS),'published article(s).')
+print('Built',7+len(POSTS)+int(subscribe_enabled),'public pages;',len(POSTS),'published article(s).')
 
