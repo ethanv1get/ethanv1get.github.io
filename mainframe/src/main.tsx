@@ -1,9 +1,10 @@
-import { useRef } from 'react'
+import { useRef, useState } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
 
 function App() {
   const photoDialog = useRef<HTMLDialogElement>(null)
+  const [hasOpenedPhoto, setHasOpenedPhoto] = useState(false)
 
   return <div className="cover">
     <a className="skip" href="#main">跳到正文</a>
@@ -24,9 +25,21 @@ function App() {
         aria-label="放大小鸭子"
         aria-haspopup="dialog"
         title="放大小鸭子"
-        onClick={() => photoDialog.current?.showModal()}
+        onClick={() => {
+          setHasOpenedPhoto(true)
+          photoDialog.current?.showModal()
+        }}
       >
-        <img src="/assets/duck-keepsake-transparent.png" alt="戴粉色蝴蝶结、围着 FUN DAY 围兜的小鸭子" width="1254" height="1254" />
+        <img
+          src="/assets/duck-keepsake-320.webp"
+          srcSet="/assets/duck-keepsake-160.webp 160w, /assets/duck-keepsake-320.webp 320w"
+          sizes="(max-width: 700px) 84px, 148px"
+          alt="戴粉色蝴蝶结、围着 FUN DAY 围兜的小鸭子"
+          width="320"
+          height="320"
+          fetchPriority="high"
+          decoding="async"
+        />
       </button>
     </div>
     <footer className="cover-footer"><span>保持好奇，实现想法。</span><span>© {new Date().getFullYear()} ethan</span></footer>
@@ -39,7 +52,7 @@ function App() {
       }}
     >
       <button className="keepsake-close" type="button" autoFocus onClick={() => photoDialog.current?.close()}>关闭</button>
-      <img src="/assets/duck-keepsake-transparent.png" alt="戴粉色蝴蝶结、围着 FUN DAY 围兜的小鸭子大图" width="1254" height="1254" />
+      {hasOpenedPhoto && <img src="/assets/duck-keepsake-large.webp" alt="戴粉色蝴蝶结、围着 FUN DAY 围兜的小鸭子大图" width="1024" height="1024" decoding="async" />}
     </dialog>
   </div>
 }
