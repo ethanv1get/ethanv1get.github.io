@@ -50,6 +50,25 @@ class NotificationTests(TestCase):
         self.assertNotEqual(create.kwargs['headers']['X-Idempotency-Key'],
                             publish.kwargs['headers']['X-Idempotency-Key'])
 
+    @patch.object(notice, 'wait_for_article')
+    @patch.object(notice, 'request', side_effect=[b'{"id":"em_fixture","status":"draft"}',
+                                                b'{"id":"em_fixture","status":"scheduled"}'])
+    def test_provider_scheduled_acceptance_succeeds_without_duplicate_send(self, request, verify):
+        self.run_notifications()
+        self.run_notifications()
+        self.assertEqual(request.call_count, 2)
+        self.assertEqual(self.claimed, {'new-note.html'})
+
+    @patch.object(notice, 'wait_for_article')
+    @patch.object(notice, 'request', side_effect=[b'{"id":"em_fixture","status":"draft"}',
+                                                b'{"id":"em_fixture","status":"draft"}'])
+    def test_unconfirmed_status_keeps_claim_and_does_not_send_twice(self, request, verify):
+        with self.assertRaisesRegex(RuntimeError, 'publishing is unconfirmed'):
+            self.run_notifications()
+        self.run_notifications()
+        self.assertEqual(request.call_count, 2)
+        self.assertEqual(self.claimed, {'new-note.html'})
+
     @patch.object(notice, 'wait_for_article', side_effect=RuntimeError('Article is not online'))
     @patch.object(notice, 'request')
     def test_unavailable_article_does_not_claim_or_send(self, request, verify):

@@ -149,12 +149,12 @@ def notify_new_articles(posts, baseline_slugs, reservations, revision, api_key):
                          'X-Idempotency-Key': str(uuid.uuid5(uuid.NAMESPACE_URL, f'{SITE}{slug}:publish')),
                          'X-Buttondown-Live-Dangerously': 'true'},
             ))
-            if not isinstance(data, dict) or data.get('status') not in ('about_to_send', 'in_flight', 'sent', 'throttled'):
+            if not isinstance(data, dict) or data.get('status') not in ('about_to_send', 'scheduled', 'in_flight', 'sent', 'throttled'):
                 raise ValueError('Unconfirmed send status')
         except (OSError, ValueError):
             # Keep the claim when the result is unknown, so a rerun cannot duplicate mail.
             raise RuntimeError(f'{slug}: publishing is unconfirmed. Review Buttondown draft {email_id} before resending.') from None
-        print(f'{slug}: accepted by Buttondown for delivery (email {email_id}).')
+        print(f'{slug}: accepted by Buttondown for delivery (email {email_id}, status {data["status"]}).')
 
 
 def git(*args):
