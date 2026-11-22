@@ -162,14 +162,17 @@ main:focus { outline: none; }
 @media (max-width: 900px) {
   .cover { padding: 0 20px; }
   .cover-header { height: 60px; }
-  .cover-header nav { gap: 18px; }
+  .cover-header nav { gap: 16px; }
   .cover-main { grid-template-columns: 1fr; gap: 24px; align-content: center; padding: 18px 0; }
   .cover-intro h1 { font-size: clamp(36px, 9.5vw, 52px); }
-  .cover-index nav a { min-height: 54px; padding: 8px 2px; }
+  .cover-index nav a { min-height: 52px; padding: 8px 2px; }
   .cover-index nav span { font-size: 19px; }
   .cover-signature { gap: 12px; }
   .cover-keepsake { width: clamp(80px, 21vw, 108px); margin-bottom: .15em; }
   .cover-footer { margin-top: 12px; min-height: 42px; font-size: 12.5px; }
+}
+@media (max-width: 400px) {
+  .cover-header nav { gap: 12px; font-size: 13.5px; }
 }
 @media (min-width: 1700px) {
   .cover { padding-inline: 6vw; }

@@ -3,7 +3,7 @@
    clipboard copy (with WebView fallback), and live version.json mirror race. */
 (() => {
   const REPO = 'ethanv1get/koin';
-  const FALLBACK_VERSION = '1.0.8';
+  const FALLBACK_VERSION = '1.0.9';
   const RELEASE_PATH_RE = /^https:\/\/.+\/ethanv1get\/koin\/releases\/download\/v\d+\.\d+\.\d+\/Koin-v\d+\.\d+\.\d+-arm64\.apk$/;
 
   const ua = navigator.userAgent || '';
@@ -109,6 +109,15 @@
     }
   };
 
+  const formatDate = (iso) => {
+    const d = new Date(iso);
+    if (Number.isNaN(d.getTime())) return '';
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${y}-${m}-${day}`;
+  };
+
   const applyManifest = (manifest) => {
     const version = String(manifest.version || '').trim().replace(/^v/i, '');
     if (!parseSemver(version) || compareSemver(version, FALLBACK_VERSION) < 0) return;
@@ -128,6 +137,16 @@
     document.querySelectorAll('[data-koin-version]').forEach((node) => {
       node.textContent = `v${version}`;
     });
+
+    if (typeof manifest.updatedAt === 'string' && manifest.updatedAt.trim()) {
+      const dateStr = formatDate(manifest.updatedAt.trim());
+      if (dateStr) {
+        document.querySelectorAll('[data-koin-updated]').forEach((node) => {
+          node.textContent = `更新于 ${dateStr}`;
+          if (node.tagName === 'TIME') node.setAttribute('datetime', dateStr);
+        });
+      }
+    }
 
     if (downloadBtn) {
       downloadBtn.href = primaryUrl;
