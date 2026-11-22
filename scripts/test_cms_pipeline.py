@@ -78,8 +78,19 @@ class CmsPublishingTests(unittest.TestCase):
         self.assertNotIn('给想法一个开始的地方',(output/'index.html').read_text())
     def test_empty_article_list_and_normalized_duplicates(self):
         self.posts=[];self.save();self.build()
-        self.assertEqual(len(list((self.root/'_site').glob('*.html'))),7)
+        self.assertEqual(len(list((self.root/'_site').glob('*.html'))),8)
         self.posts=json.loads(self.original);copy=dict(self.posts[0]);copy['slug']='hello';self.posts.append(copy)
+        self.save();self.build(ok=False)
+
+    def test_koin_download_page_is_built_and_reserved(self):
+        self.build()
+        output = self.root / '_site'
+        html = (output / 'koin.html').read_text(encoding='utf-8')
+        self.assertIn('id="koin-wechat-tip"', html)
+        self.assertIn('assets/koin.js', html)
+        self.assertTrue((output / 'assets/koin.js').is_file())
+        self.assertIn('koin.html', (output / 'sitemap.xml').read_text(encoding='utf-8'))
+        self.posts.append({**self.posts[0], 'slug': 'koin'})
         self.save();self.build(ok=False)
 
     def test_email_form_requires_a_verified_username_and_keeps_its_route_reserved(self):

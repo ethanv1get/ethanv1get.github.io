@@ -5,7 +5,7 @@ from pathlib import Path
 from html import escape, unescape
 import json
 import os
-from content import load_articles, public_articles, show_subscription_page, subscription_username, SUBSCRIBE_PAGE
+from content import load_articles, public_articles, show_subscription_page, subscription_username, STATIC_PAGES, SUBSCRIBE_PAGE
 import re
 from datetime import date
 ROOT=Path(__file__).resolve().parents[1]
@@ -63,6 +63,10 @@ def structured_data(file, title, desc, canonical):
             article['datePublished'] = post['datePublished']
         page['mainEntity'] = {'@id': article['@id']}
         graph.append(article)
+    elif file == 'koin.html':
+        app = {'@type': 'SoftwareApplication', '@id': canonical + '#app', 'name': 'Koin', 'operatingSystem': 'Android', 'applicationCategory': 'FinanceApplication', 'description': desc, 'url': canonical, 'author': {'@id': person['@id']}, 'offers': {'@type': 'Offer', 'price': '0', 'priceCurrency': 'CNY'}}
+        page['mainEntity'] = {'@id': app['@id']}
+        graph.append(app)
     return {'@context': 'https://schema.org', '@graph': graph}
 
 
@@ -83,7 +87,7 @@ def row(p):
     cn_date = f'<time datetime="{published.isoformat()}">{published.year}年{published.month}月{published.day}日</time>' if published else escape(value)
     return f'''<a class="home-tl-item" href="/{p['slug']}"><small>{escape(p['label'])} · {cn_date}</small><b>{escape(p['title'])}</b><p>{escape(p['summary'])}</p></a>'''
 
-def shell(file,title,desc,active,content):
+def shell(file,title,desc,active,content,extra_head=''):
     canonical=BASE+('' if file=='index.html' else file)
     nav=''.join(f'<a href="{url}" {CURRENT if key==active else ""}><span>{label}</span></a>' for key,url,label in [('home','index.html','首页'),('articles','articles.html','文章'),('about','about.html','关于'),('contact','contact.html','联系')])
     schema=structured_data(file, title, desc, canonical)
@@ -95,7 +99,7 @@ def shell(file,title,desc,active,content):
 <meta name="theme-color" content="#1b1b1d" media="(prefers-color-scheme: dark)"><title>{escape(title)} · ethan.</title><meta name="description" content="{escape(desc)}">
 {'<meta name="robots" content="noindex">' if file == '404.html' or (file == SUBSCRIBE_PAGE and not buttondown_username) else ''}
 <link rel="canonical" href="{canonical}"><meta property="og:type" content="{'article' if any(post['slug']==file for post in POSTS) else 'website'}"><meta property="og:locale" content="zh_CN"><meta property="og:site_name" content="ethan."><meta property="og:title" content="{escape(title)} · ethan."><meta property="og:description" content="{escape(desc)}"><meta property="og:url" content="{canonical}"><meta property="og:image" content="{BASE}assets/og.png?v=20261030-cover"><meta property="og:image:alt" content="ethan. 记录此刻，也探索未知。"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="{escape(title)} · ethan."><meta name="twitter:description" content="{escape(desc)}"><meta name="twitter:image" content="{BASE}assets/og.png?v=20261030-cover">
-<link rel="icon" href="assets/favicon.svg?v=20261121-cover" type="image/svg+xml"><link rel="stylesheet" href="assets/theme.css?v=20261121-cover"><link rel="stylesheet" href="style.css?v=20261121-cover"><script src="site.js?v=20261030-print-edition" defer></script><script type="application/ld+json">{json.dumps(schema,ensure_ascii=False).replace('<', chr(92) + 'u003c')}</script></head>
+<link rel="icon" href="assets/favicon.svg?v=20261121-cover" type="image/svg+xml"><link rel="stylesheet" href="assets/theme.css?v=20261121-cover"><link rel="stylesheet" href="style.css?v=20261122-koin"><script src="site.js?v=20261030-print-edition" defer></script>{extra_head}<script type="application/ld+json">{json.dumps(schema,ensure_ascii=False).replace('<', chr(92) + 'u003c')}</script></head>
 <body id="top"><a class="skip" href="#main">跳到正文</a><div class="site-shell"><header class="site-header"><a class="brand" href="index.html" translate="no" aria-label="ethan. 首页"><img class="brand-avatar" src="assets/avatar.jpg" alt="" width="28" height="28" decoding="async"><span>ethan<i>.</i></span></a><nav aria-label="主导航">{nav}</nav></header><main id="main" tabindex="-1">{content}</main>
 <footer class="site-footer"><div class="footer-top"><div><a class="footer-brand" href="index.html" translate="no">ethan.</a><p>给好奇心留一点空间。</p></div><div class="footer-contact"><p class="footer-label">保持联系</p><div class="footer-links"><a href="https://t.me/ETHANV1">Telegram</a><a href="mailto:ethansunv1@gmail.com">写封邮件</a></div></div></div><div class="footer-bottom"><span>© <span data-year>2026</span> ethan</span><a class="to-top" href="#top">回到顶部 {arrow('↑')}</a></div></footer></div></body></html>'''
 
@@ -103,7 +107,7 @@ OUTPUT.mkdir(parents=True,exist_ok=True)
 for post in ALL_POSTS:
     if post['draft'] and (OUTPUT/post['slug']).exists():
         (OUTPUT/post['slug']).unlink()
-def write(file,title,desc,active,content): (OUTPUT/file).write_text(shell(file,title,desc,active,content),encoding='utf-8')
+def write(file,title,desc,active,content,extra_head=''): (OUTPUT/file).write_text(shell(file,title,desc,active,content,extra_head),encoding='utf-8')
 page_video=''
 ring='''<div class="idea-mark" aria-hidden="true"><svg viewBox="0 0 420 420" fill="none"><circle cx="210" cy="210" r="180" fill="#e2ecf0"/><circle cx="210" cy="210" r="132" fill="#b8cbc6"/><circle cx="256" cy="236" r="68" fill="#315a79"/><circle cx="112" cy="112" r="28" fill="#dfb198"/></svg></div>'''
 def empty_state(category='all'):
@@ -203,12 +207,115 @@ if subscribe_enabled:
     )
 else:
     (OUTPUT / SUBSCRIBE_PAGE).unlink(missing_ok=True)
+
+koin_version = '1.0.8'
+koin_notes = '快捷触发回归「双击音量下键」：结合全新系统悬浮窗直弹 + 650ms 防抖冷却 + 550ms 舒适连按间隔 + 长按调音量自动忽略，保留「不使用快捷键」一键停用按钮。'
+koin_sha256 = '3e892a002befb3caf5f06e74df838fe2f2da9c358cf49483915644c9c456ace0'
+koin_origin = f'https://github.com/ethanv1get/koin/releases/download/v{koin_version}/Koin-v{koin_version}-arm64.apk'
+koin_primary = f'https://tvv.tw/{koin_origin}'
+koin_emblem = '''<svg class="koin-emblem" viewBox="0 0 64 64" width="60" height="60" fill="none" aria-hidden="true">
+  <defs>
+    <linearGradient id="koin-seg-0" gradientUnits="userSpaceOnUse" x1="32.0" y1="4.72" x2="59.28" y2="32.48"><stop offset="0%" stop-color="#EC4899"/><stop offset="100%" stop-color="#8B5CF6"/></linearGradient>
+    <linearGradient id="koin-seg-1" gradientUnits="userSpaceOnUse" x1="59.28" y1="32.0" x2="31.52" y2="59.28"><stop offset="0%" stop-color="#8B5CF6"/><stop offset="100%" stop-color="#F97316"/></linearGradient>
+    <linearGradient id="koin-seg-2" gradientUnits="userSpaceOnUse" x1="32.0" y1="59.28" x2="4.72" y2="31.52"><stop offset="0%" stop-color="#F97316"/><stop offset="100%" stop-color="#3B82F6"/></linearGradient>
+    <linearGradient id="koin-seg-3" gradientUnits="userSpaceOnUse" x1="4.72" y1="32.0" x2="32.48" y2="4.72"><stop offset="0%" stop-color="#3B82F6"/><stop offset="100%" stop-color="#EC4899"/></linearGradient>
+  </defs>
+  <path d="M 59.28 32.48 A 27.28 27.28 0 0 0 32.0 4.72" stroke="url(#koin-seg-0)" stroke-width="5.44" stroke-linecap="round"/>
+  <path d="M 31.52 59.28 A 27.28 27.28 0 0 0 59.28 32.0" stroke="url(#koin-seg-1)" stroke-width="5.44" stroke-linecap="round"/>
+  <path d="M 4.72 31.52 A 27.28 27.28 0 0 0 32.0 59.28" stroke="url(#koin-seg-2)" stroke-width="5.44" stroke-linecap="round"/>
+  <path d="M 32.48 4.72 A 27.28 27.28 0 0 0 4.72 32.0" stroke="url(#koin-seg-3)" stroke-width="5.44" stroke-linecap="round"/>
+  <path d="M 25.6 21.12 L 25.6 42.88 M 39.04 21.76 L 26.88 32 L 39.68 42.88" stroke="currentColor" stroke-width="4.35" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="40.32" cy="21.76" r="1.8" fill="#EC4899"/>
+</svg>'''
+
+koin_content = f'''<section class="koin-page" aria-labelledby="koin-title">
+  <aside id="koin-wechat-tip" class="koin-wechat-tip" hidden>
+    <p class="koin-wechat-title">在微信内打开，请切到系统浏览器下载</p>
+    <p class="koin-wechat-desc">微信内置浏览器不支持直接下载安装包。请点击右上角「···」，选择「在浏览器打开」即可一键下载；也可以复制本页链接到手机自带浏览器打开。</p>
+    <div class="koin-wechat-actions">
+      <button id="koin-copy-page" class="button secondary pill" type="button">复制本页链接</button>
+    </div>
+  </aside>
+
+  <div class="koin-hero">
+    <div class="koin-icon-box">{koin_emblem}</div>
+    <div class="koin-intro">
+      <div class="koin-title-row">
+        <h1 id="koin-title" translate="no">Koin</h1>
+        <span class="koin-ver" data-koin-version>v{koin_version}</span>
+      </div>
+      <p class="koin-tagline">轻盈记账 · 每一笔清晰可见</p>
+      <div class="koin-meta-tags">
+        <span>Android · arm64-v8a</span>
+        <span>约 33 MB</span>
+        <span>本地离线 · 免费</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="koin-download-card">
+    <div class="koin-actions">
+      <a id="koin-download-btn" class="button primary pill koin-primary-btn" href="{koin_primary}">下载 Android 安装包（v{koin_version}）</a>
+      <button id="koin-copy-url" class="button secondary pill" type="button" data-copy-url="{koin_primary}">复制下载直链</button>
+    </div>
+    <p id="koin-status" class="koin-status" role="status" aria-live="polite"></p>
+    <div class="koin-notes-box">
+      <span class="koin-label">更新说明</span>
+      <p data-koin-notes>{escape(koin_notes)}</p>
+    </div>
+    <div class="koin-mirrors" id="koin-mirrors">
+      <span class="koin-label">备用下载线路</span>
+      <div class="koin-mirror-links">
+        <a data-koin-mirror="tvv" href="https://tvv.tw/{koin_origin}" rel="external">国内线路 1</a>
+        <a data-koin-mirror="ghproxy" href="https://gh-proxy.org/{koin_origin}" rel="external">国内线路 2</a>
+        <a data-koin-mirror="edgeone" href="https://edgeone.gh-proxy.org/{koin_origin}" rel="external">国内线路 3</a>
+        <a data-koin-mirror="origin" href="{koin_origin}" rel="external">GitHub 原链</a>
+        <a data-koin-mirror="release" href="https://github.com/ethanv1get/koin/releases/tag/v{koin_version}" rel="external">发布页</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="koin-features">
+    <div class="koin-feature">
+      <h2>本地保存</h2>
+      <p>账单、预算与银行渠道全部存在手机本地，不上传云端，联网仅用于检查软件更新。</p>
+    </div>
+    <div class="koin-feature">
+      <h2>随时闪记</h2>
+      <p>支持双击音量下键、下拉快捷磁贴或桌面快捷入口直接拉起悬浮窗记一笔。</p>
+    </div>
+    <div class="koin-feature">
+      <h2>平滑升级</h2>
+      <p>安装后在右上角快捷入口即可检查更新，新版本覆盖安装自动保留全部本地账单。</p>
+    </div>
+  </div>
+
+  <div class="koin-install-notes">
+    <h2>安装说明</h2>
+    <ul>
+      <li>目前仅提供 Android 64 位安装包（<code>arm64-v8a</code>）。</li>
+      <li>如在微信内打不开下载，请点右上角「···」选择「在浏览器打开」，再点击下载按钮。</li>
+      <li>安装时若系统提示「允许安装未知来源应用」，授权后继续即可；旧版用户直接覆盖安装，原有账单不会丢失。</li>
+    </ul>
+    <p class="koin-checksum">SHA-256：<code data-koin-sha256>{koin_sha256}</code></p>
+  </div>
+</section>'''
+
+write(
+    'koin.html',
+    'Koin · Android 下载',
+    '轻盈极简的个人本地记账应用 Koin（Android），支持全局悬浮闪记、预算圆环统计与应用内覆盖更新。',
+    '',
+    koin_content,
+    extra_head='<script src="assets/koin.js?v=20261122-koin" defer></script>',
+)
+
 write('404.html','页面未找到','这个页面暂时没有内容。从首页或文章列表继续探索 ethan 的个人空间。','',f'''<section class="not-found">{page_video}<span class="error-code" role="img" aria-label="错误 404">4<span class="error-zero" aria-hidden="true"></span>4</span><h1>想法还在，<br>这一页走丢了。</h1><p>这个地址可能已经移动，或暂时不存在。<br>换一个入口，继续探索。</p><div class="actions">{link('/index.html','返回首页',True)}{link('/articles.html','浏览文章')}</div></section>''')
 # Root-relative assets/links for the custom 404 even when a missing URL is nested.
 p=OUTPUT/'404.html'; html=p.read_text()
 import re
 html=re.sub(r'(href|src)="(?!https?:|mailto:|#|/)([^"]+)"',r'\1="/\2"',html); p.write_text(html)
-(OUTPUT/'sitemap.xml').write_text('<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'+''.join(f'<url><loc>{BASE+("" if f=="index.html" else f)}</loc></url>' for f in dict.fromkeys(['index.html','articles.html','tech.html','life.html'] + [p['slug'] for p in POSTS] + ['about.html','contact.html'] + ([SUBSCRIBE_PAGE] if buttondown_username else [])))+'</urlset>\n')
+(OUTPUT/'sitemap.xml').write_text('<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'+''.join(f'<url><loc>{BASE+("" if f=="index.html" else f)}</loc></url>' for f in dict.fromkeys(['index.html','articles.html','tech.html','life.html'] + [p['slug'] for p in POSTS] + ['about.html','contact.html','koin.html'] + ([SUBSCRIBE_PAGE] if buttondown_username else [])))+'</urlset>\n')
 (OUTPUT/'robots.txt').write_text('User-agent: *\nAllow: /\nSitemap: '+BASE+'sitemap.xml\n')
-print('Built',7+len(POSTS)+int(subscribe_enabled),'public pages;',len(POSTS),'published article(s).')
+print('Built',len(STATIC_PAGES)+len(POSTS)+int(subscribe_enabled),'public pages;',len(POSTS),'published article(s).')
 
