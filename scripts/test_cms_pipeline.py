@@ -78,8 +78,21 @@ class CmsPublishingTests(unittest.TestCase):
         self.assertNotIn('给想法一个开始的地方',(output/'index.html').read_text())
     def test_empty_article_list_and_normalized_duplicates(self):
         self.posts=[];self.save();self.build()
-        self.assertEqual(len(list((self.root/'_site').glob('*.html'))),8)
+        self.assertEqual(len(list((self.root/'_site').glob('*.html'))),9)
         self.posts=json.loads(self.original);copy=dict(self.posts[0]);copy['slug']='hello';self.posts.append(copy)
+        self.save();self.build(ok=False)
+
+    def test_works_page_is_built_and_reserved(self):
+        self.build()
+        output = self.root / '_site'
+        html = (output / 'works.html').read_text(encoding='utf-8')
+        self.assertIn('href="koin.html"', html)
+        self.assertIn('data-koin-version', html)
+        self.assertIn('data-koin-updated', html)
+        self.assertIn('assets/koin.js', html)
+        self.assertIn('works.html', (output / 'sitemap.xml').read_text(encoding='utf-8'))
+        self.assertIn('href="works.html"', (output / 'articles.html').read_text(encoding='utf-8'))
+        self.posts.append({**self.posts[0], 'slug': 'works'})
         self.save();self.build(ok=False)
 
     def test_koin_download_page_is_built_and_reserved(self):

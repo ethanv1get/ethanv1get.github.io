@@ -51,7 +51,7 @@ for post in POSTS:
 def structured_data(file, title, desc, canonical):
     person = {'@type': 'Person', '@id': BASE + '#ethan', 'name': 'ethan', 'url': BASE + 'about.html', 'sameAs': ['https://t.me/ETHANV1']}
     site = {'@type': 'WebSite', '@id': BASE + '#website', 'name': 'ethan.', 'url': BASE, 'inLanguage': 'zh-CN', 'publisher': {'@id': person['@id']}}
-    page_type = {'about.html': 'AboutPage', 'contact.html': 'ContactPage', 'articles.html': 'CollectionPage', 'tech.html': 'CollectionPage', 'life.html': 'CollectionPage'}.get(file, 'WebPage')
+    page_type = {'about.html': 'AboutPage', 'contact.html': 'ContactPage', 'articles.html': 'CollectionPage', 'tech.html': 'CollectionPage', 'life.html': 'CollectionPage', 'works.html': 'CollectionPage'}.get(file, 'WebPage')
     page = {'@type': page_type, '@id': canonical + '#page', 'url': canonical, 'name': title + ' · ethan.', 'description': desc, 'inLanguage': 'zh-CN', 'isPartOf': {'@id': site['@id']}, 'about': {'@id': person['@id']}}
     graph = [site, person, page]
     post = next((p for p in POSTS if p['slug'] == file), None)
@@ -89,7 +89,7 @@ def row(p):
 
 def shell(file,title,desc,active,content,extra_head=''):
     canonical=BASE+('' if file=='index.html' else file)
-    nav=''.join(f'<a href="{url}" {CURRENT if key==active else ""}><span>{label}</span></a>' for key,url,label in [('home','index.html','首页'),('articles','articles.html','文章'),('about','about.html','关于'),('contact','contact.html','联系')])
+    nav=''.join(f'<a href="{url}" {CURRENT if key==active else ""}><span>{label}</span></a>' for key,url,label in [('home','index.html','首页'),('articles','articles.html','文章'),('works','works.html','作品'),('about','about.html','关于'),('contact','contact.html','联系')])
     schema=structured_data(file, title, desc, canonical)
     return f'''<!doctype html>
 <html lang="zh-CN"><head>
@@ -99,7 +99,7 @@ def shell(file,title,desc,active,content,extra_head=''):
 <meta name="theme-color" content="#1b1b1d" media="(prefers-color-scheme: dark)"><title>{escape(title)} · ethan.</title><meta name="description" content="{escape(desc)}">
 {'<meta name="robots" content="noindex">' if file == '404.html' or (file == SUBSCRIBE_PAGE and not buttondown_username) else ''}
 <link rel="canonical" href="{canonical}"><meta property="og:type" content="{'article' if any(post['slug']==file for post in POSTS) else 'website'}"><meta property="og:locale" content="zh_CN"><meta property="og:site_name" content="ethan."><meta property="og:title" content="{escape(title)} · ethan."><meta property="og:description" content="{escape(desc)}"><meta property="og:url" content="{canonical}"><meta property="og:image" content="{BASE}assets/og.png?v=20261030-cover"><meta property="og:image:alt" content="ethan. 记录此刻，也探索未知。"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="{escape(title)} · ethan."><meta name="twitter:description" content="{escape(desc)}"><meta name="twitter:image" content="{BASE}assets/og.png?v=20261030-cover">
-<link rel="icon" href="assets/favicon.svg?v=20261121-cover" type="image/svg+xml"><link rel="stylesheet" href="assets/theme.css?v=20261121-cover"><link rel="stylesheet" href="style.css?v=20261122-koin"><script src="site.js?v=20261030-print-edition" defer></script>{extra_head}<script type="application/ld+json">{json.dumps(schema,ensure_ascii=False).replace('<', chr(92) + 'u003c')}</script></head>
+<link rel="icon" href="assets/favicon.svg?v=20261121-cover" type="image/svg+xml"><link rel="stylesheet" href="assets/theme.css?v=20261121-cover"><link rel="stylesheet" href="style.css?v=20261122-works"><script src="site.js?v=20261030-print-edition" defer></script>{extra_head}<script type="application/ld+json">{json.dumps(schema,ensure_ascii=False).replace('<', chr(92) + 'u003c')}</script></head>
 <body id="top"><a class="skip" href="#main">跳到正文</a><div class="site-shell"><header class="site-header"><a class="brand" href="index.html" translate="no" aria-label="ethan. 首页"><img class="brand-avatar" src="assets/avatar.jpg" alt="" width="28" height="28" decoding="async"><span>ethan<i>.</i></span></a><nav aria-label="主导航">{nav}</nav></header><main id="main" tabindex="-1">{content}</main>
 <footer class="site-footer"><div class="footer-top"><div><a class="footer-brand" href="index.html" translate="no">ethan.</a><p>给好奇心留一点空间。</p></div><div class="footer-contact"><p class="footer-label">保持联系</p><div class="footer-links"><a href="https://t.me/ETHANV1">Telegram</a><a href="mailto:ethansunv1@gmail.com">写封邮件</a></div></div></div><div class="footer-bottom"><span>© <span data-year>2026</span> ethan</span><a class="to-top" href="#top">回到顶部 {arrow('↑')}</a></div></footer></div></body></html>'''
 
@@ -168,7 +168,7 @@ for p in POSTS:
     content=f'''<article class="article-page"><div class="article-masthead">{page_video}<a class="text-link back-link" href="articles.html">{arrow('←')} 返回文章列表</a><header class="article-heading"><div class="meta"><span>{escape(p['label'])}</span>{publication_date(p)}{'<span class="badge">待确认草稿</span>' if p['draft'] else ''}</div><h1>{escape(p['title'])}</h1><p class="byline">文 / <span translate="no">ethan</span></p></header></div><div class="article-layout">{toc}<div class="prose">{'<p class="notice">这是一篇为展示博客阅读效果撰写的开站草稿，待 ethan 确认后再作为正式文章发布。</p>' if p['draft'] else ''}{body}{article_actions}</div></div></article>'''
     write(p['slug'],p['title'],p['summary']+(' 本文为待确认开站草稿。' if p['draft'] else ''),'articles',content)
 
-write('about.html','关于','认识 ethan：最近在折腾 AI 工具，也在慢慢整理这个网站，记录技术上的尝试、生活里的观察，以及还没想明白的问题。','about',f'''<section class="page-heading about-heading">{page_video}<h1>你好，我是 <span translate="no">ethan</span>。</h1></section><section class="about-detail section"><aside class="about-margin"><span>关注的方向</span><p>AI 工具<br>技术实践<br>生活观察</p></aside><div class="about-body"><p>最近在折腾 AI 工具，也在慢慢整理这个网站。这里会放一些技术上的尝试、生活里的观察，还有暂时没想明白的问题。</p><p>我想把过程也记下来：为什么开始，试过什么，哪里卡住，最后有什么发现。</p><p>也欢迎你来聊聊自己的发现。</p><div class="actions">{link('articles.html','浏览文章',pill=True)}{link('contact.html','联系我',True,pill=True)}</div></div></section>''')
+write('about.html','关于','认识 ethan：最近在折腾 AI 工具，也在慢慢整理这个网站，记录技术上的尝试、生活里的观察，以及还没想明白的问题。','about',f'''<section class="page-heading about-heading">{page_video}<h1>你好，我是 <span translate="no">ethan</span>。</h1></section><section class="about-detail section"><aside class="about-margin"><span>关注的方向</span><p>AI 工具<br>技术实践<br>生活观察</p></aside><div class="about-body"><p>最近在折腾 AI 工具，也在慢慢整理这个网站。这里会放一些技术上的尝试、生活里的观察，还有暂时没想明白的问题。</p><p>我想把过程也记下来：为什么开始，试过什么，哪里卡住，最后有什么发现。</p><p>也欢迎你来聊聊自己的发现。</p><div class="actions">{link('articles.html','浏览文章',pill=True)}{link('works.html','看看作品',pill=True)}{link('contact.html','联系我',True,pill=True)}</div></div></section>''')
 
 write('contact.html','联系','通过 Telegram @ETHANV1 联系 ethan，或写封邮件，聊聊你的问题、想法与日常发现。','contact',f'''<section class="page-heading">{page_video}<h1>聊聊你的想法</h1><p>交流一个问题，分享一篇文章，<br>或者，简单打个招呼。</p></section><section class="contact-section section"><div class="contact-icons"><a class="contact-icon" href="https://t.me/ETHANV1" aria-label="在 Telegram 上联系 ethan"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg><span>Telegram</span></a><a class="contact-icon" href="mailto:ethansunv1@gmail.com" aria-label="给 ethan 写邮件"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 6L2 7"/></svg><span>Email</span></a></div></section>''')
 if subscribe_enabled:
@@ -208,9 +208,10 @@ if subscribe_enabled:
 else:
     (OUTPUT / SUBSCRIBE_PAGE).unlink(missing_ok=True)
 
-koin_version = '1.0.8'
-koin_notes = '快捷触发回归「双击音量下键」：结合全新系统悬浮窗直弹 + 650ms 防抖冷却 + 550ms 舒适连按间隔 + 长按调音量自动忽略，保留「不使用快捷键」一键停用按钮。'
-koin_sha256 = '3e892a002befb3caf5f06e74df838fe2f2da9c358cf49483915644c9c456ace0'
+koin_version = '1.0.9'
+koin_updated = '2026-11-22'
+koin_notes = '新增「隐藏后台卡片（防清后台误杀）」原生防杀机制（默认开启，支持在 ⚡ 弹窗内随时一键切换）：切回桌面后 Koin 自动从多任务卡片隐藏，平时点一键清理后台不再误杀无障碍监听服务；若选择「不使用快捷键」则自动恢复正常显示。'
+koin_sha256 = '5609062a17c98062514bc4c3b36adc6d1f1bae4784134a5dd770c8bd37f8c62d'
 koin_origin = f'https://github.com/ethanv1get/koin/releases/download/v{koin_version}/Koin-v{koin_version}-arm64.apk'
 koin_primary = f'https://tvv.tw/{koin_origin}'
 koin_emblem = '''<svg class="koin-emblem" viewBox="0 0 64 64" width="60" height="60" fill="none" aria-hidden="true">
@@ -228,7 +229,49 @@ koin_emblem = '''<svg class="koin-emblem" viewBox="0 0 64 64" width="60" height=
   <circle cx="40.32" cy="21.76" r="1.8" fill="#EC4899"/>
 </svg>'''
 
+works_content = f'''<section class="page-heading">{page_video}<h1>作品与工具</h1><p>自己动手做出来的小应用与工具，欢迎下载体验，也欢迎随时聊聊反馈。</p></section>
+<section class="works-section section" aria-label="作品列表">
+  <article class="work-card" aria-labelledby="work-koin-title">
+    <div class="work-card-main">
+      <div class="work-card-head">
+        <div class="work-icon-box">{koin_emblem}</div>
+        <div class="work-head-copy">
+          <div class="work-title-row">
+            <h2 id="work-koin-title" translate="no">Koin</h2>
+            <span class="koin-ver" data-koin-version>v{koin_version}</span>
+            <span class="work-status">可下载体验</span>
+          </div>
+          <p class="work-tagline">轻盈记账 · 每一笔清晰可见</p>
+        </div>
+      </div>
+      <p class="work-desc">自己做的极简 Android 本地记账应用。账单、预算与银行渠道全部留在手机本地，不上传云端；支持双击音量下键、下拉快捷磁贴或桌面入口直接拉起悬浮窗随时闪记，并在应用内直接覆盖更新。</p>
+      <div class="work-tags" aria-label="特点">
+        <span>Android · arm64-v8a</span>
+        <span>本地离线 · 免费</span>
+        <span>四色预算环</span>
+        <span>悬浮窗闪记</span>
+        <time class="work-updated" datetime="{koin_updated}" data-koin-updated>更新于 {koin_updated}</time>
+      </div>
+    </div>
+    <div class="work-actions">
+      <a class="button primary pill" href="koin.html">体验与下载 Koin</a>
+      <a class="text-link" href="contact.html">提个建议或反馈</a>
+    </div>
+  </article>
+  <p class="archive-note">目前收录 1 件作品，后续做出新东西也会陆续放在这里。</p>
+</section>'''
+
+write(
+    'works.html',
+    '作品',
+    'ethan 自己动手做的小应用与工具。目前收录 Android 极简本地记账应用 Koin，欢迎下载体验。',
+    'works',
+    works_content,
+    extra_head='<script src="assets/koin.js?v=20261122-works" defer></script>',
+)
+
 koin_content = f'''<section class="koin-page" aria-labelledby="koin-title">
+  <a class="text-link back-link koin-back" href="works.html">{arrow('←')} 返回作品列表</a>
   <aside id="koin-wechat-tip" class="koin-wechat-tip" hidden>
     <p class="koin-wechat-title">在微信内打开，请切到系统浏览器下载</p>
     <p class="koin-wechat-desc">微信内置浏览器不支持直接下载安装包。请点击右上角「···」，选择「在浏览器打开」即可一键下载；也可以复制本页链接到手机自带浏览器打开。</p>
@@ -305,9 +348,9 @@ write(
     'koin.html',
     'Koin · Android 下载',
     '轻盈极简的个人本地记账应用 Koin（Android），支持全局悬浮闪记、预算圆环统计与应用内覆盖更新。',
-    '',
+    'works',
     koin_content,
-    extra_head='<script src="assets/koin.js?v=20261122-koin" defer></script>',
+    extra_head='<script src="assets/koin.js?v=20261122-works" defer></script>',
 )
 
 write('404.html','页面未找到','这个页面暂时没有内容。从首页或文章列表继续探索 ethan 的个人空间。','',f'''<section class="not-found">{page_video}<span class="error-code" role="img" aria-label="错误 404">4<span class="error-zero" aria-hidden="true"></span>4</span><h1>想法还在，<br>这一页走丢了。</h1><p>这个地址可能已经移动，或暂时不存在。<br>换一个入口，继续探索。</p><div class="actions">{link('/index.html','返回首页',True)}{link('/articles.html','浏览文章')}</div></section>''')
@@ -315,7 +358,7 @@ write('404.html','页面未找到','这个页面暂时没有内容。从首页�
 p=OUTPUT/'404.html'; html=p.read_text()
 import re
 html=re.sub(r'(href|src)="(?!https?:|mailto:|#|/)([^"]+)"',r'\1="/\2"',html); p.write_text(html)
-(OUTPUT/'sitemap.xml').write_text('<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'+''.join(f'<url><loc>{BASE+("" if f=="index.html" else f)}</loc></url>' for f in dict.fromkeys(['index.html','articles.html','tech.html','life.html'] + [p['slug'] for p in POSTS] + ['about.html','contact.html','koin.html'] + ([SUBSCRIBE_PAGE] if buttondown_username else [])))+'</urlset>\n')
+(OUTPUT/'sitemap.xml').write_text('<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'+''.join(f'<url><loc>{BASE+("" if f=="index.html" else f)}</loc></url>' for f in dict.fromkeys(['index.html','articles.html','tech.html','life.html','works.html'] + [p['slug'] for p in POSTS] + ['about.html','contact.html','koin.html'] + ([SUBSCRIBE_PAGE] if buttondown_username else [])))+'</urlset>\n')
 (OUTPUT/'robots.txt').write_text('User-agent: *\nAllow: /\nSitemap: '+BASE+'sitemap.xml\n')
 print('Built',len(STATIC_PAGES)+len(POSTS)+int(subscribe_enabled),'public pages;',len(POSTS),'published article(s).')
 

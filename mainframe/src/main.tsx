@@ -25,6 +25,7 @@ function App() {
         <nav aria-label="顶部导航">
           <a href="/" aria-current="page">首页</a>
           <a href="/articles.html">文章</a>
+          <a href="/works.html">作品</a>
           <a href="/about.html">关于</a>
           <a href="/contact.html">联系</a>
         </nav>
@@ -58,6 +59,7 @@ function App() {
         <div className="cover-index">
           <nav aria-label="主导航">
             <a href="/articles.html"><span>文章与记录</span><small>读一些文字 →</small></a>
+            <a href="/works.html"><span>作品与工具</span><small>体验 Koin 记账 App →</small></a>
             <a href="/about.html"><span>关于 ethan</span><small>认识我 →</small></a>
             <a href="/contact.html"><span>联系</span><small>聊聊你的发现 →</small></a>
           </nav>

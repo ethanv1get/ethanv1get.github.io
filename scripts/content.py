@@ -7,7 +7,7 @@ import json
 import os
 import re
 
-STATIC_PAGES = ('index.html', 'articles.html', 'tech.html', 'life.html', 'about.html', 'contact.html', 'koin.html', '404.html')
+STATIC_PAGES = ('index.html', 'articles.html', 'tech.html', 'life.html', 'works.html', 'about.html', 'contact.html', 'koin.html', '404.html')
 SUBSCRIBE_PAGE = 'subscribe.html'
 CATEGORY_LABELS = {'life': '随笔', 'tech': '技术'}
 
