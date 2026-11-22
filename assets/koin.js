@@ -3,7 +3,7 @@
    clipboard copy (with WebView fallback), and live version.json mirror race. */
 (() => {
   const REPO = 'ethanv1get/koin';
-  const FALLBACK_VERSION = '1.0.9';
+  const FALLBACK_VERSION = '1.0.10';
   const RELEASE_PATH_RE = /^https:\/\/.+\/ethanv1get\/koin\/releases\/download\/v\d+\.\d+\.\d+\/Koin-v\d+\.\d+\.\d+-arm64\.apk$/;
 
   const ua = navigator.userAgent || '';
@@ -109,6 +109,9 @@
     }
   };
 
+  const STORAGE_KEY = 'koin_manifest_v1';
+  const SHA256_RE = /^[a-f0-9]{64}$/i;
+
   const formatDate = (iso) => {
     const d = new Date(iso);
     if (Number.isNaN(d.getTime())) return '';
@@ -118,8 +121,62 @@
     return `${y}-${m}-${day}`;
   };
 
+  const normalizeManifest = (data) => {
+    if (!data || typeof data !== 'object') return null;
+    if (typeof data.version === 'string' && parseSemver(data.version)) {
+      const sha = typeof data.sha256 === 'string' ? data.sha256.trim().toLowerCase() : '';
+      return {
+        version: data.version.trim().replace(/^v/i, ''),
+        notes: typeof data.notes === 'string' ? data.notes.trim() : '',
+        sha256: SHA256_RE.test(sha) ? sha : '',
+        downloadUrl: typeof data.downloadUrl === 'string' ? data.downloadUrl.trim() : '',
+        downloadUrls: Array.isArray(data.downloadUrls) ? data.downloadUrls.filter(isTrustedApkUrl) : [],
+        updatedAt: typeof data.updatedAt === 'string' ? data.updatedAt.trim() : '',
+      };
+    }
+    if (typeof data.tag_name === 'string' && parseSemver(data.tag_name)) {
+      return {
+        version: data.tag_name.trim().replace(/^v/i, ''),
+        notes: typeof data.body === 'string' ? data.body.trim() : '',
+        sha256: '',
+        downloadUrl: '',
+        downloadUrls: [],
+        updatedAt: typeof data.published_at === 'string' ? data.published_at.trim() : '',
+      };
+    }
+    return null;
+  };
+
+  const mergeManifest = (current, incoming) => {
+    if (!incoming || compareSemver(incoming.version, FALLBACK_VERSION) < 0) return null;
+    if (!current) return incoming;
+    const cmp = compareSemver(incoming.version, current.version);
+    if (cmp > 0) return incoming;
+    if (cmp < 0) return null;
+
+    const merged = {
+      version: current.version,
+      notes: current.notes || incoming.notes,
+      sha256: current.sha256 || incoming.sha256,
+      downloadUrl: current.downloadUrl || incoming.downloadUrl,
+      downloadUrls: current.downloadUrls.length >= incoming.downloadUrls.length
+        ? current.downloadUrls
+        : incoming.downloadUrls,
+      updatedAt: current.updatedAt || incoming.updatedAt,
+    };
+
+    const changed =
+      merged.notes !== current.notes ||
+      merged.sha256 !== current.sha256 ||
+      merged.downloadUrl !== current.downloadUrl ||
+      merged.downloadUrls.length !== current.downloadUrls.length ||
+      merged.updatedAt !== current.updatedAt;
+
+    return changed ? merged : null;
+  };
+
   const applyManifest = (manifest) => {
-    const version = String(manifest.version || '').trim().replace(/^v/i, '');
+    const version = manifest.version;
     if (!parseSemver(version) || compareSemver(version, FALLBACK_VERSION) < 0) return;
 
     const originUrl = `https://github.com/${REPO}/releases/download/v${version}/Koin-v${version}-arm64.apk`;
@@ -138,8 +195,8 @@
       node.textContent = `v${version}`;
     });
 
-    if (typeof manifest.updatedAt === 'string' && manifest.updatedAt.trim()) {
-      const dateStr = formatDate(manifest.updatedAt.trim());
+    if (manifest.updatedAt) {
+      const dateStr = formatDate(manifest.updatedAt);
       if (dateStr) {
         document.querySelectorAll('[data-koin-updated]').forEach((node) => {
           node.textContent = `更新于 ${dateStr}`;
@@ -157,14 +214,18 @@
       copyUrlBtn.dataset.copyUrl = primaryUrl;
     }
 
-    if (typeof manifest.notes === 'string' && manifest.notes.trim()) {
+    if (manifest.notes) {
       const notesEl = document.querySelector('[data-koin-notes]');
-      if (notesEl) notesEl.textContent = manifest.notes.trim();
+      if (notesEl) notesEl.textContent = manifest.notes;
     }
 
-    if (typeof manifest.sha256 === 'string' && /^[a-f0-9]{64}$/i.test(manifest.sha256.trim())) {
-      const shaEl = document.querySelector('[data-koin-sha256]');
-      if (shaEl) shaEl.textContent = manifest.sha256.trim().toLowerCase();
+    const shaEl = document.querySelector('[data-koin-sha256]');
+    if (shaEl) {
+      if (manifest.sha256) {
+        shaEl.textContent = manifest.sha256;
+      } else if (compareSemver(version, FALLBACK_VERSION) > 0) {
+        shaEl.textContent = '同步中…';
+      }
     }
 
     const mirrorMap = {
@@ -181,29 +242,55 @@
     });
   };
 
-  const syncLatestVersion = async () => {
-    const bust = Date.now();
-    const raw = `https://raw.githubusercontent.com/${REPO}/main/version.json`;
-    const sources = [
-      `https://tvv.tw/${raw}?t=${bust}`,
-      `https://cdn.jsdmirror.com/gh/${REPO}@main/version.json?t=${bust}`,
-      `https://fastly.jsdelivr.net/gh/${REPO}@main/version.json?t=${bust}`,
-      `https://gh-proxy.org/${raw}?t=${bust}`,
-      `${raw}?t=${bust}`,
-    ];
+  let bestManifest = null;
 
-    const results = await Promise.allSettled(sources.map((src) => fetchJson(src, 6000)));
-    let best = null;
-    for (const item of results) {
-      if (item.status !== 'fulfilled' || !item.value || typeof item.value !== 'object') continue;
-      const ver = item.value.version;
-      if (!parseSemver(ver)) continue;
-      if (!best || compareSemver(ver, best.version) > 0) {
-        best = item.value;
+  const commitManifest = (incoming, persist) => {
+    const next = mergeManifest(bestManifest, incoming);
+    if (!next) return;
+    bestManifest = next;
+    applyManifest(next);
+    if (persist) {
+      try {
+        sessionStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+      } catch {
+        // Ignore private-browsing or quota errors.
       }
     }
-    if (best) applyManifest(best);
   };
 
-  syncLatestVersion().catch(() => {});
+  try {
+    const rawCache = sessionStorage.getItem(STORAGE_KEY);
+    if (rawCache) {
+      const cached = normalizeManifest(JSON.parse(rawCache));
+      if (cached) commitManifest(cached, false);
+    }
+  } catch {
+    // Ignore malformed or restricted sessionStorage.
+  }
+
+  const syncLatestVersion = () => {
+    const bust = Date.now();
+    const raw = `https://raw.githubusercontent.com/${REPO}/main/version.json`;
+    const api = `https://api.github.com/repos/${REPO}/releases/latest`;
+    const sources = [
+      `https://tvv.tw/${raw}?t=${bust}`,
+      `https://gh-proxy.org/${raw}?t=${bust}`,
+      `https://edgeone.gh-proxy.org/${raw}?t=${bust}`,
+      `${raw}?t=${bust}`,
+      api,
+      `https://tvv.tw/${api}`,
+      `https://cdn.jsdmirror.com/gh/${REPO}@main/version.json?t=${bust}`,
+    ];
+
+    sources.forEach((src) => {
+      fetchJson(src, 6000)
+        .then((data) => {
+          const normalized = normalizeManifest(data);
+          if (normalized) commitManifest(normalized, true);
+        })
+        .catch(() => {});
+    });
+  };
+
+  syncLatestVersion();
 })();
