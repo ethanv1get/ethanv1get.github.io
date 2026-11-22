@@ -1,5 +1,8 @@
 /* Progressive enhancements. Core navigation and contact links work without JS. */
 (() => {
+  if (location.hash === '#light' || location.hash === '#dark') {
+    document.documentElement.dataset.theme = location.hash.slice(1);
+  }
 
   const year = String(new Date().getFullYear());
   document.querySelectorAll('[data-year]').forEach(node => { node.textContent = year; });
