@@ -23,7 +23,7 @@ if OUTPUT.exists():
 OUTPUT.mkdir()
 env = dict(os.environ, SITE_OUTPUT=str(OUTPUT))
 subprocess.run([sys.executable, str(ROOT / 'scripts/build.py')], env=env, check=True)
-for name in ('style.css', 'site.js', 'CNAME', '.nojekyll'):
+for name in ('style.css', 'site.js', 'CNAME', '.nojekyll', '8b29e5934c26bd7c0fe90b93fd937cc4.txt'):
     shutil.copy2(ROOT / name, OUTPUT / name)
 for path in (ROOT / 'assets').rglob('*'):
     if path.is_symlink():
