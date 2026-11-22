@@ -68,34 +68,35 @@ def structured_data(file, title, desc, canonical):
 
 def card(p,i,level=3):
     title_id = f'post-title-{i}'
-    read_id = f'post-read-{i}'
     draft_badge = '<span class="badge">待确认草稿</span>' if p['draft'] else ''
-    return f'''<a class="post-card" href="{p['slug']}" aria-labelledby="{title_id} {read_id}">
+    return f'''<a class="post-card" href="{p['slug']}" aria-labelledby="{title_id}">
       <div class="post-info">
         <div class="meta"><span>{escape(p['label'])}</span>{publication_date(p)}{draft_badge}</div>
         <h{level} id="{title_id}">{escape(p['title'])}</h{level}>
         <p>{escape(p['summary'])}</p>
-        <span class="read-link" id="{read_id}">阅读文章</span>
       </div>
     </a>'''
 
 def row(p):
-    return f'''<a class="project-row" href="{p['slug']}"><span class="project-name">{escape(p['title'])}</span><span class="project-desc">{escape(p['summary'])}</span><span class="project-stat">{escape(p['label'])} · {p.get('datePublished') or ''}</span></a>'''
+    value = p.get('datePublished') or ''
+    published = date.fromisoformat(value) if re.fullmatch(r'\d{4}-\d{2}-\d{2}', value) else None
+    cn_date = f'<time datetime="{published.isoformat()}">{published.year}年{published.month}月{published.day}日</time>' if published else escape(value)
+    return f'''<a class="home-tl-item" href="/{p['slug']}"><small>{escape(p['label'])} · {cn_date}</small><b>{escape(p['title'])}</b><p>{escape(p['summary'])}</p></a>'''
 
 def shell(file,title,desc,active,content):
     canonical=BASE+('' if file=='index.html' else file)
-    nav=''.join(f'<a href="{url}" {CURRENT if key==active else ""}><span>{label}</span></a>' for key,url,label in [('articles','articles.html','文章'),('about','about.html','关于'),('contact','contact.html','联系')])
+    nav=''.join(f'<a href="{url}" {CURRENT if key==active else ""}><span>{label}</span></a>' for key,url,label in [('home','index.html','首页'),('articles','articles.html','文章'),('about','about.html','关于'),('contact','contact.html','联系')])
     schema=structured_data(file, title, desc, canonical)
     return f'''<!doctype html>
 <html lang="zh-CN"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="color-scheme" content="light dark">
-<meta name="theme-color" content="#f7f7f5" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#0a0a0a" media="(prefers-color-scheme: dark)"><title>{escape(title)} · ethan.</title><meta name="description" content="{escape(desc)}">
+<meta name="theme-color" content="#fafaf9" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#1b1b1d" media="(prefers-color-scheme: dark)"><title>{escape(title)} · ethan.</title><meta name="description" content="{escape(desc)}">
 {'<meta name="robots" content="noindex">' if file == '404.html' or (file == SUBSCRIBE_PAGE and not buttondown_username) else ''}
 <link rel="canonical" href="{canonical}"><meta property="og:type" content="{'article' if any(post['slug']==file for post in POSTS) else 'website'}"><meta property="og:locale" content="zh_CN"><meta property="og:site_name" content="ethan."><meta property="og:title" content="{escape(title)} · ethan."><meta property="og:description" content="{escape(desc)}"><meta property="og:url" content="{canonical}"><meta property="og:image" content="{BASE}assets/og.png?v=20261030-cover"><meta property="og:image:alt" content="ethan. 记录此刻，也探索未知。"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="{escape(title)} · ethan."><meta name="twitter:description" content="{escape(desc)}"><meta name="twitter:image" content="{BASE}assets/og.png?v=20261030-cover">
-<link rel="icon" href="assets/favicon.svg?v=20261112-dark" type="image/svg+xml"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet"><link rel="stylesheet" href="assets/theme.css?v=20261116-system"><link rel="stylesheet" href="style.css?v=20261120-buttons"><script src="site.js?v=20261030-print-edition" defer></script><script type="application/ld+json">{json.dumps(schema,ensure_ascii=False).replace('<', chr(92) + 'u003c')}</script></head>
-<body id="top"><div class="noise-overlay"></div><a class="skip" href="#main">跳到正文</a><div class="site-shell"><header class="site-header"><a class="brand" href="index.html" translate="no" aria-label="ethan. 首页">ethan<span>.</span></a><nav aria-label="主导航">{nav}</nav></header><main id="main" tabindex="-1">{content}</main>
+<link rel="icon" href="assets/favicon.svg?v=20261121-cover" type="image/svg+xml"><link rel="stylesheet" href="assets/theme.css?v=20261121-cover"><link rel="stylesheet" href="style.css?v=20261121-cover"><script src="site.js?v=20261030-print-edition" defer></script><script type="application/ld+json">{json.dumps(schema,ensure_ascii=False).replace('<', chr(92) + 'u003c')}</script></head>
+<body id="top"><a class="skip" href="#main">跳到正文</a><div class="site-shell"><header class="site-header"><a class="brand" href="index.html" translate="no" aria-label="ethan. 首页"><img class="brand-avatar" src="assets/avatar.jpg" alt="" width="28" height="28" decoding="async"><span>ethan<i>.</i></span></a><nav aria-label="主导航">{nav}</nav></header><main id="main" tabindex="-1">{content}</main>
 <footer class="site-footer"><div class="footer-top"><div><a class="footer-brand" href="index.html" translate="no">ethan.</a><p>给好奇心留一点空间。</p></div><div class="footer-contact"><p class="footer-label">保持联系</p><div class="footer-links"><a href="https://t.me/ETHANV1">Telegram</a><a href="mailto:ethansunv1@gmail.com">写封邮件</a></div></div></div><div class="footer-bottom"><span>© <span data-year>2026</span> ethan</span><a class="to-top" href="#top">回到顶部 {arrow('↑')}</a></div></footer></div></body></html>'''
 
 OUTPUT.mkdir(parents=True,exist_ok=True)
@@ -115,17 +116,15 @@ def empty_state(category='all'):
     }[category]
     return f'<div class="empty"><h2>{title}</h2><p>{text}</p><a class="text-link" href="articles.html">浏览全部文章</a></div>'
 
-home=f'''<section class="hero" aria-labelledby="home-title"><div class="annotation">[ PERSONAL SITE // 2026 ]</div><div class="hero-copy"><h1 id="home-title"><span>记录此刻，</span><span>也探索未知。</span></h1><p class="hero-meta"><span class="status-dot"></span>记录思考，探索技术，也收藏生活里值得记住的瞬间。</p><div class="actions">{link('articles.html','浏览文章',True)}{link('about.html','认识我')}</div></div></section>
-<section class="card" id="profile" aria-labelledby="profile-title"><div class="card-label" id="profile-title">{{ PROFILE }}</div><div class="profile-grid"><div class="profile-entry"><span class="tag">关注</span><p>AI 工具 · 技术实践 · 生活观察</p></div><div class="profile-entry"><span class="tag">近况</span><p>最近在折腾 AI 工具，也在慢慢整理这个网站。</p></div><div class="profile-entry"><span class="tag">方式</span><p>我想把过程也记下来：为什么开始，试过什么，哪里卡住，最后有什么发现。</p></div></div></section>
-<section class="card" id="writing" aria-labelledby="writing-title"><div class="card-label" id="writing-title">{{ WRITING }}</div><div class="projects-list">{''.join(row(p) for p in POSTS[:3]) if POSTS else empty_state()}</div></section>
-<section class="card" id="contact" aria-labelledby="contact-title"><div class="card-label" id="contact-title">{{ CONTACT }}</div><p class="contact-text">也欢迎你来聊聊自己的发现。</p><div class="contact-links"><a href="https://t.me/ETHANV1">Telegram</a><a href="mailto:ethansunv1@gmail.com">Email</a></div></section>'''
+home='''<section class="hero" aria-labelledby="home-title"><div class="hero-copy"><h1 id="home-title">记录此刻，也探索未知。</h1></div></section>'''
 
 write('index.html','记录此刻，也探索未知','ethan 的个人空间，记录思考、探索技术，也收藏生活里值得记住的瞬间。','home',home)
 
 archive_subscribe = f'<div class="archive-subscribe">{subscribe_link}</div>' if subscribe_link else ''
 for filename,category,label in [('articles.html','all','全部'),('tech.html','tech','技术'),('life.html','life','生活')]:
     visible=[p for p in POSTS if category=='all' or p['category']==category]
-    filters=''.join(f'<a class="filter" href="{f}" {CURRENT if c==category else ""}>{n}<span>{len([p for p in POSTS if c=="all" or p["category"]==c])}</span></a>' for f,c,n in [('articles.html','all','全部'),('tech.html','tech','技术'),('life.html','life','生活')])
+    counts={c:len([p for p in POSTS if c=='all' or p['category']==c]) for c in ('all','tech','life')}
+    filters=''.join(f'<a class="filter" href="{f}" {CURRENT if c==category else ""}>{n}<span>{counts[c]}</span></a>' for f,c,n in [('articles.html','all','全部'),('tech.html','tech','技术'),('life.html','life','生活')] if c=='all' or c==category or counts[c])
     content = f'''<section class="page-heading">{page_video}<h1>文章与记录</h1><p>技术与实践，生活与随笔。<br>不急着给出答案，先把值得思考的事情写下来。</p></section>
     <section class="archive section" aria-label="{label}文章">
       <div class="archive-toolbar">
