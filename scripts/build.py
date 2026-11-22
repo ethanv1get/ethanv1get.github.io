@@ -208,10 +208,10 @@ if subscribe_enabled:
 else:
     (OUTPUT / SUBSCRIBE_PAGE).unlink(missing_ok=True)
 
-koin_version = '1.0.9'
+koin_version = '1.0.10'
 koin_updated = '2026-11-22'
-koin_notes = '新增「隐藏后台卡片（防清后台误杀）」原生防杀机制（默认开启，支持在 ⚡ 弹窗内随时一键切换）：切回桌面后 Koin 自动从多任务卡片隐藏，平时点一键清理后台不再误杀无障碍监听服务；若选择「不使用快捷键」则自动恢复正常显示。'
-koin_sha256 = '5609062a17c98062514bc4c3b36adc6d1f1bae4784134a5dd770c8bd37f8c62d'
+koin_notes = '启动页底部新增极简版权声明小字（© 2026 Koin · Ethan · All Rights Reserved），深浅色模式自动适配，随启动封面柔和淡入淡出。'
+koin_sha256 = 'd3284229c03766c507280f6fbbf010409fb48e1e951db8d88bbd6eefb2b75b31'
 koin_origin = f'https://github.com/ethanv1get/koin/releases/download/v{koin_version}/Koin-v{koin_version}-arm64.apk'
 koin_primary = f'https://tvv.tw/{koin_origin}'
 koin_emblem = '''<svg class="koin-emblem" viewBox="0 0 64 64" width="60" height="60" fill="none" aria-hidden="true">
@@ -267,7 +267,7 @@ write(
     'ethan 自己动手做的小应用与工具。目前收录 Android 极简本地记账应用 Koin，欢迎下载体验。',
     'works',
     works_content,
-    extra_head='<script src="assets/koin.js?v=20261122-works" defer></script>',
+    extra_head='<script src="assets/koin.js?v=20261122-sync2" defer></script>',
 )
 
 koin_content = f'''<section class="koin-page" aria-labelledby="koin-title">
@@ -350,7 +350,7 @@ write(
     '轻盈极简的个人本地记账应用 Koin（Android），支持全局悬浮闪记、预算圆环统计与应用内覆盖更新。',
     'works',
     koin_content,
-    extra_head='<script src="assets/koin.js?v=20261122-works" defer></script>',
+    extra_head='<script src="assets/koin.js?v=20261122-sync2" defer></script>',
 )
 
 write('404.html','页面未找到','这个页面暂时没有内容。从首页或文章列表继续探索 ethan 的个人空间。','',f'''<section class="not-found">{page_video}<span class="error-code" role="img" aria-label="错误 404">4<span class="error-zero" aria-hidden="true"></span>4</span><h1>想法还在，<br>这一页走丢了。</h1><p>这个地址可能已经移动，或暂时不存在。<br>换一个入口，继续探索。</p><div class="actions">{link('/index.html','返回首页',True)}{link('/articles.html','浏览文章')}</div></section>''')
